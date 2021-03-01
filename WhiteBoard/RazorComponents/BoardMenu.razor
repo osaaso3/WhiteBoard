@@ -1,0 +1,30 @@
+﻿<div class="head-menu">
+    <select @onchange="ChangeColor">
+        <option value="black" style="background-color:black">Black</option>
+        <option value="red" style="background-color:red">Red</option>
+        <option value="blue" style="background-color:blue">Blue</option>
+        <option value="green" style="background-color:green">Green</option>
+        <option value="purple" style="background-color:purple">Purple</option>
+    </select>
+
+    <label>
+        Thickness:
+        <input type="number" min="1" max="10" @oninput="ChangeWidth" @bind-value="@selectedWidth" />
+    </label>
+    <label>
+        Text:
+        <input @bind-value="@_textInput" @onchange="ChangeText" @bind-value:event="oninput" />
+    </label>
+    <select @onchange="ChangeSelectOption" class="opts">
+        <option value="">Dbl-click options</option>
+        <option value="Text">Text</option>
+        <option value="Oval">Oval</option>
+        <option value="Rectangle">Rectangle</option>
+    </select>
+    <button @onclick="ToggleEraseMode">
+        <img src="@ButtonIcon" alt="Button icon" width="30" height="30" />
+        @ButtonLabel
+    </button>
+    <button @onclick="@(async () => await SaveBoardAsImage.InvokeAsync())">Save</button>
+    <button style="margin-left: 200px" @onclick="@(async () => await StartNew.InvokeAsync())">New</button>
+</div>

@@ -1,0 +1,21 @@
+﻿@page "/"
+
+@if (start)
+{
+    <WhiteBoard Name="@name" DataUrl="@imageDataUrl" IsStartNew="HandleNewWhiteboard" />
+}
+else
+{
+    <h6>Create new whiteboardd</h6>
+    <input @bind-value="name" @bind-value:event="oninput" />
+    <button @onclick="@(()=> start = true)">Start</button>
+    <hr />
+    <p>Or upload a previous whiteboard</p>
+    <InputFile OnChange="OnInputFileChange" />
+    @if (!string.IsNullOrWhiteSpace(imageDataUrl))
+    {
+        <img id="image" width="100" height="100" src="@imageDataUrl" alt="Your whiteboard image" />
+    }
+    <button @onclick="RecoverLast">Recover last</button>
+}
+

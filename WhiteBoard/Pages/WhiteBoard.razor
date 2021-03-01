@@ -1,0 +1,6 @@
+﻿
+<BoardMenu @bind-DblClkOption="_selectedOption" @bind-Text="_text" ColorChanged="HandleChangeColor" MarkerWidthChanged="HandleWidthChange" IsEraseModeChanged="HandleToggleEraseMode" SaveBoardAsImage="HandleSave" StartNew="HandleStartNew"/>
+<div class="canvas-container @Pointer" @ref="_container">
+    <Canvas @onmousemove="MouseMoveCanvasAsync" @onmouseup="MouseUpCanvas" @onmousedown="MouseDownCanvas" @ondblclick="DoubleClickCanvas" width="1200" height="600" @ref="_canvas" style="border: 1px solid black"></Canvas>
+</div>
+<img id="image" hidden src="@DataUrl" alt="hidden image" />
