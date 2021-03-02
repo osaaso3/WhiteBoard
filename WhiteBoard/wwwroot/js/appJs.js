@@ -14,7 +14,7 @@ export function getContainerLocation(containerId) {
     return out;
 }
 export function getWidowDimentions() {
-    let output = { 'X': window.innerWidth, 'Y': window.innerHeight };
-    console.log(JSON.stringify(output));
+    let output = window.innerWidth;
+    console.log('window width ' + output);
     return output;
 }

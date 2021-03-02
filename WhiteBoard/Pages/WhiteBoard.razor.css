@@ -1,14 +1,20 @@
-﻿
-.canvas-container {
-    margin: 0;
-    padding: 0;
-    width:1200px;
-    height:600px;
-    box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.34), 
-                0 6.7px 5.3px rgba(0, 0, 0, 0.48), 
-                0 12.5px 10px rgba(0, 0, 0, 0.6), 
-                0 22.3px 17.9px rgba(0, 0, 0, 0.72), 
-                0 41.8px 33.4px rgba(0, 0, 0, 0.86)
+﻿@media (min-width: 641px) {
+    .canvas-container {
+        margin: 0;
+        padding: 0;
+        width: 1200px;
+        height: 600px;
+        box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.34), 0 6.7px 5.3px rgba(0, 0, 0, 0.48), 0 12.5px 10px rgba(0, 0, 0, 0.6), 0 22.3px 17.9px rgba(0, 0, 0, 0.72), 0 41.8px 33.4px rgba(0, 0, 0, 0.86)
+    }
+}
+@media (max-width: 640.98px) {
+    .canvas-container {
+        margin: 0;
+        padding: 0;
+        width: 600px;
+        height: 300px;
+        box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.34), 0 6.7px 5.3px rgba(0, 0, 0, 0.48), 0 12.5px 10px rgba(0, 0, 0, 0.6), 0 22.3px 17.9px rgba(0, 0, 0, 0.72), 0 41.8px 33.4px rgba(0, 0, 0, 0.86)
+    }
 }
 .erase-mode {
     cursor:url('icons/eraser-point-32.png') 0 32, auto;

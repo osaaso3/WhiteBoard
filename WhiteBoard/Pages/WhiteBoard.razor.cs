@@ -26,6 +26,10 @@ namespace Board.Client.Pages
         private Location _canvasLoc = new();
         private Location _oldMouseLocation = new();
         private Location _mouseLocation = new();
+        private Location _touchLocation = new();
+        private Location _oldTouchLocation = new();
+        private double _canvasW = 1200;
+        private double _canvasH = 600;
         private bool _isMouseDown;
         private string _color = "black";
         private bool _shouldRender = true;
@@ -33,7 +37,8 @@ namespace Board.Client.Pages
         private bool _isEraseMode;
         private string _selectedOption;
         private string _text;
-       
+        private bool _isTouch;
+
         private string Pointer => _isEraseMode ? "erase-mode" : "marker-mode";
         [Parameter]
         public string Name { get; set; } = "new";
@@ -84,10 +89,7 @@ namespace Board.Client.Pages
         {
             _text = text;
         }
-        private void HandleOptionsChange(string opt)
-        {
-
-        }
+       
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
@@ -105,23 +107,28 @@ namespace Board.Client.Pages
                 await _context2D.LineCapAsync(LineCap.Round);
                 var containerLocation = await Interop.GetContainerLocation(_container.Id);
                 (_canvasLoc.X, _canvasLoc.Y) = (containerLocation.X, containerLocation.Y);
+                var width = await Interop.GetWindowSize();
+                if (width <= 641)
+                {
+                    _canvasW = 600;
+                    _canvasH = 300;
+                }
+
             }
             Console.WriteLine($"color: {_color} line: {_lineWidth}");
         }
         private async Task DoubleClickCanvas(MouseEventArgs e)
         {
-            //var clk = e.Button;
-            //if (clk != 2) return;
             _mouseLocation.X = e.ClientX - _canvasLoc.X;
             _mouseLocation.Y = e.ClientY - _canvasLoc.Y;
             if (_selectedOption == "Text")
             {
-                await _context2D.FontAsync($"{8 * _lineWidth}px serif");
+                await _context2D.FontAsync($"{10 * _lineWidth}px serif");
                 await _context2D.StrokeTextAsync(_text, _mouseLocation.X, _mouseLocation.Y);
             }
             else if (_selectedOption == "Rectangle")
             {
-                await _context2D.StrokeRectAsync(_mouseLocation.X, _mouseLocation.Y,50 * _lineWidth, 40 * _lineWidth);
+                await _context2D.StrokeRectAsync(_mouseLocation.X, _mouseLocation.Y, 50 * _lineWidth, 40 * _lineWidth);
             }
             else if (_selectedOption == "Oval")
             {
@@ -153,6 +160,31 @@ namespace Board.Client.Pages
             await DrawCanvasAsync(_mouseLocation.X, _mouseLocation.Y, _oldMouseLocation.X, _oldMouseLocation.Y);
             _oldMouseLocation.X = _mouseLocation.X;
             _oldMouseLocation.Y = _mouseLocation.Y;
+        }
+        private void TouchStart(TouchEventArgs e)
+        {
+            _shouldRender = false;
+            var touch = e.TargetTouches[0];
+            _oldTouchLocation.X = _touchLocation.X = touch.ClientX - _canvasLoc.X;
+            _oldTouchLocation.Y = _touchLocation.Y = touch.ClientY - _canvasLoc.Y;
+            _isTouch = true;
+
+        }
+        private async Task TouchMoveAsync(TouchEventArgs e)
+        {
+            _shouldRender = false;
+            if (!_isTouch) return;
+            var touch = e.TargetTouches[0];
+            _touchLocation.X = touch.ClientX - _canvasLoc.X;
+            _touchLocation.Y = touch.ClientY - _canvasLoc.Y;
+            await DrawCanvasAsync(_touchLocation.X, _touchLocation.Y, _oldTouchLocation.X, _oldTouchLocation.Y);
+            _oldTouchLocation.X = _touchLocation.X;
+            _oldTouchLocation.Y = _touchLocation.Y;
+        }
+        private void TouchEnd(TouchEventArgs e)
+        {
+            _shouldRender = false;
+            _isTouch = false;
         }
 
         private async Task DrawCanvasAsync(double oldX, double oldY, double x, double y)

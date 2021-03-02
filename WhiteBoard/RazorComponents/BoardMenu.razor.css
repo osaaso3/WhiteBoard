@@ -2,7 +2,7 @@
     top: 0;
     display: flex;
     flex-direction: row;
-    font-size:85%;
+    font-size: 85%;    
 }
 .label-image {
     left:0;
@@ -17,4 +17,7 @@ option {
 }
 .opts option {
     color:black;
+}
+input[type=text]{
+    max-width:120px
 }
