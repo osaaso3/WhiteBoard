@@ -13,10 +13,7 @@ namespace Board.Client.RazorComponents
         private string ButtonIcon => IsEraseMode ? "icons/eraser-32.png" : "icons/marker-32.png";
         private double selectedWidth = 3;
         private List<string> _doubleClkOptions = new() { "Text", "Rectagle", "Oval" };
-        private string _selectedOption = "Text";
         private string _textInput;
-        //private MarkerWidth selectedWidth;
-        //private MarkerWidth[] widthOptions = Enum.GetValues(typeof(MarkerWidth)).Cast<MarkerWidth>().ToArray();
         [Parameter]
         public string Color { get; set; }
         [Parameter]

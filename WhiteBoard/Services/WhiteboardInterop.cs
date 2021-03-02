@@ -25,5 +25,10 @@ namespace Board.Client.Services
             var module = await moduleTask.Value;
             return await module.InvokeAsync<Location>("getContainerLocation", containerId);
         }
+        public async ValueTask<double> GetWindowSize()
+        {
+            var module = await moduleTask.Value;
+            return await module.InvokeAsync<double>("getWidowDimentions");
+        }
     }
 }

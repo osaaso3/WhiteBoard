@@ -2,11 +2,13 @@
 
 @if (start)
 {
-    <WhiteBoard Name="@name" DataUrl="@imageDataUrl" IsStartNew="HandleNewWhiteboard" />
+    <div class="whiteboard-container">
+        <WhiteBoard Name="@name" DataUrl="@imageDataUrl" IsStartNew="HandleNewWhiteboard" />
+    </div>
 }
 else
 {
-    <h6>Create new whiteboardd</h6>
+    <h6>Create new whiteboard</h6>
     <input @bind-value="name" @bind-value:event="oninput" />
     <button @onclick="@(()=> start = true)">Start</button>
     <hr />
