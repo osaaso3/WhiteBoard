@@ -11,8 +11,9 @@ namespace Board.Client.RazorComponents
     {
         private string ButtonLabel => IsEraseMode ? "Use Marker" : "Use Eraser";
         private string ButtonIcon => IsEraseMode ? "icons/eraser-32.png" : "icons/marker-32.png";
+        private string LineButtonLabel => LineMode ? "Line Mode" : "Freestyle";
+        private string LineButtonIcon => LineMode ? "icons/straight-line-32.png" : "icons/squiggly-line-32.png";
         private double selectedWidth = 3;
-        private List<string> _doubleClkOptions = new() { "Text", "Rectagle", "Oval" };
         private string _textInput;
         [Parameter]
         public string Color { get; set; }
@@ -37,6 +38,10 @@ namespace Board.Client.RazorComponents
         public string DblClkOption { get; set; }
         [Parameter]
         public EventCallback<string> DblClkOptionChanged { get; set; }
+        [Parameter]
+        public bool LineMode { get; set; }
+        [Parameter]
+        public EventCallback<bool> LineModeChanged { get; set; }
 
         private void ChangeColor(ChangeEventArgs e)
         {
@@ -57,8 +62,14 @@ namespace Board.Client.RazorComponents
         {
             IsEraseMode = !IsEraseMode;
             IsEraseModeChanged.InvokeAsync(IsEraseMode);
+            if (LineMode) ToggleLineMode();            
         }
+        private void ToggleLineMode()
+        {
+            LineMode = !LineMode;
+            LineModeChanged.InvokeAsync(LineMode);            
 
+        }
         private void ChangeWidth(ChangeEventArgs e)
         {
             //if (e.Value == null) return;

@@ -25,6 +25,10 @@
         <img src="@ButtonIcon" alt="Button icon" width="30" height="30" />
         @ButtonLabel
     </button>
+    <button @onclick="ToggleLineMode">
+        <img src="@LineButtonIcon" alt="line button icon" width="30" height="30" />
+        @LineButtonLabel
+    </button>
     <button @onclick="@(async () => await SaveBoardAsImage.InvokeAsync())">Save</button>
     <button style="right:0px" @onclick="@(async () => await StartNew.InvokeAsync())">New</button>
 </div>

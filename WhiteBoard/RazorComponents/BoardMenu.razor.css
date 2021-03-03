@@ -2,7 +2,9 @@
     top: 0;
     display: flex;
     flex-direction: row;
-    font-size: 85%;    
+    flex-wrap:wrap;
+    height:6vh;
+    font-size: 75%;    
 }
 .label-image {
     left:0;
