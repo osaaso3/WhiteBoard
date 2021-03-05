@@ -10,7 +10,7 @@
     overflow-x:scroll;
 }
 .head-menu > * {
-    max-height:30px;
+    max-height:34px;
 }
 .label-image {
     left:0;
@@ -31,6 +31,6 @@ input[type=text]{
 }
 @media (max-width: 640.98px){
     span{
-        visibility: hidden;
+        display: none;
     }
 }

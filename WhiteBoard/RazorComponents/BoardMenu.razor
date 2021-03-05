@@ -9,7 +9,7 @@
 
     <label>
         Thickness:
-        <input type="number" min="1" max="10" @oninput="ChangeWidth" @bind-value="@selectedWidth" />
+        <input type="number" min="1" max="10" @onchange="ChangeWidth" @bind-value="@selectedWidth" @bind-value:event="oninput" />
     </label>
     <label>
         Text:

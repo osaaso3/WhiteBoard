@@ -72,7 +72,7 @@ namespace Board.Client.Pages
                 
 
             }
-            Console.WriteLine($"color: {_color} line: {_lineWidth}");
+            Console.WriteLine($"color: {_color} line: {_lineWidth} should render: {_shouldRender}");
         }
         private async void HandleChangeColor(string color)
         {
@@ -110,6 +110,7 @@ namespace Board.Client.Pages
         {
             _lineWidth = width;
             await _context2D.LineWidthAsync(_lineWidth);
+            await InvokeAsync(StateHasChanged);
         }
         private void HandleToggleLineMode(bool isLineMode)
         {

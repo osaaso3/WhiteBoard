@@ -75,6 +75,7 @@ namespace Board.Client.RazorComponents
             //if (e.Value == null) return;
             MarkerWidth = selectedWidth;
             MarkerWidthChanged.InvokeAsync(MarkerWidth);
+            Console.WriteLine($"Width changed to {e?.Value}");
         }
     }
 }
