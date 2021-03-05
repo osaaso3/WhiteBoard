@@ -23,11 +23,11 @@
     </select>
     <button @onclick="ToggleEraseMode">
         <img src="@ButtonIcon" alt="Button icon" width="30" height="30" />
-        @ButtonLabel
+        <span> @ButtonLabel</span>
     </button>
     <button @onclick="ToggleLineMode">
         <img src="@LineButtonIcon" alt="line button icon" width="30" height="30" />
-        @LineButtonLabel
+        <span>@LineButtonLabel</span>
     </button>
     <button @onclick="@(async () => await SaveBoardAsImage.InvokeAsync())">Save</button>
     <button style="right:0px" @onclick="@(async () => await StartNew.InvokeAsync())">New</button>

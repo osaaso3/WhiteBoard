@@ -167,14 +167,15 @@ namespace Board.Client.Pages
             _oldMouseLocation.X = _mouseLocation.X;
             _oldMouseLocation.Y = _mouseLocation.Y;
         }
-        private void TouchStart(TouchEventArgs e)
+        private async Task TouchStart(TouchEventArgs e)
         {
             _shouldRender = false;
             var touch = e.TargetTouches[0];
             _oldTouchLocation.X = _touchLocation.X = touch.ClientX - _canvasLoc.X;
             _oldTouchLocation.Y = _touchLocation.Y = touch.ClientY - _canvasLoc.Y;
             _isTouch = true;
-
+            if (!_isLineMode) return;
+            _tempDataUrl = await _canvas.ToDataURLAsync();
         }
         private async Task TouchMoveAsync(TouchEventArgs e)
         {
@@ -183,7 +184,13 @@ namespace Board.Client.Pages
             var touch = e.TargetTouches[0];
             _touchLocation.X = touch.ClientX - _canvasLoc.X;
             _touchLocation.Y = touch.ClientY - _canvasLoc.Y;
+            if (_isLineMode)
+            {
+                await _context2D.ClearRectAsync(0, 0, _canvasSpecs.W, _canvasSpecs.H);
+                await _context2D.DrawImageAsync("tempImage", 0, 0);
+            }
             await DrawCanvasAsync(_touchLocation.X, _touchLocation.Y, _oldTouchLocation.X, _oldTouchLocation.Y);
+            if (_isLineMode) return;
             _oldTouchLocation.X = _touchLocation.X;
             _oldTouchLocation.Y = _touchLocation.Y;
         }

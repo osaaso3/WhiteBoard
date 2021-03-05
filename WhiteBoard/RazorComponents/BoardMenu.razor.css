@@ -2,13 +2,19 @@
     top: 0;
     display: flex;
     flex-direction: row;
-    flex-wrap:wrap;
-    height:6vh;
+    flex-wrap:nowrap;
+    height:8vh;
+    min-height:32px;
     font-size: 75%;    
+    max-width:100vw;
+    overflow-x:scroll;
+}
+.head-menu > * {
+    max-height:30px;
 }
 .label-image {
     left:0;
-    margin-right:2px;
+    margin-right:1px;
 }
 select {
     background-color: white;
@@ -22,4 +28,9 @@ option {
 }
 input[type=text]{
     max-width:120px
+}
+@media (max-width: 640.98px){
+    span{
+        visibility: hidden;
+    }
 }

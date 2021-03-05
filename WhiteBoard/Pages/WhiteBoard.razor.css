@@ -13,5 +13,6 @@
     height: 90vh;
     bottom:1vh;
     position:fixed;
-    box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.34), 0 6.7px 5.3px rgba(0, 0, 0, 0.48), 0 12.5px 10px rgba(0, 0, 0, 0.6), 0 22.3px 17.9px rgba(0, 0, 0, 0.72), 0 41.8px 33.4px rgba(0, 0, 0, 0.86)
+    box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.34), 0 6.7px 5.3px rgba(0, 0, 0, 0.48), 0 12.5px 10px rgba(0, 0, 0, 0.6), 0 22.3px 17.9px rgba(0, 0, 0, 0.72), 0 41.8px 33.4px rgba(0, 0, 0, 0.86);
+    touch-action:none;
 }
