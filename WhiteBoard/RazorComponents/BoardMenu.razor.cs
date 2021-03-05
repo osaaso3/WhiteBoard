@@ -42,6 +42,8 @@ namespace Board.Client.RazorComponents
         public bool LineMode { get; set; }
         [Parameter]
         public EventCallback<bool> LineModeChanged { get; set; }
+        [Parameter]
+        public EventCallback ClearAndResize { get; set; }
 
         private void ChangeColor(ChangeEventArgs e)
         {
@@ -77,5 +79,6 @@ namespace Board.Client.RazorComponents
             MarkerWidthChanged.InvokeAsync(MarkerWidth);
             Console.WriteLine($"Width changed to {e?.Value}");
         }
+       
     }
 }

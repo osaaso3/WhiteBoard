@@ -69,7 +69,7 @@ namespace Board.Client.Pages
                 await _context2D.LineWidthAsync(_lineWidth);
                 await _context2D.LineJoinAsync(LineJoin.Round);
                 await _context2D.LineCapAsync(LineCap.Round);
-                
+
 
             }
             Console.WriteLine($"color: {_color} line: {_lineWidth} should render: {_shouldRender}");
@@ -89,12 +89,8 @@ namespace Board.Client.Pages
 
         private async void HandleStartNew()
         {
-            var imageUrl = await _canvas.ToDataURLAsync();
-            var canvasData = new CanvasModel
-            { Name = Name, ImageUrl = imageUrl, MarkerWidth = _lineWidth, Color = _color };
-            LocalStorage.SetItem("LastCanvas", canvasData);
+            await SaveCanvasStateToLocalStorage();
             await IsStartNew.InvokeAsync(true);
-
         }
 
         private async void HandleToggleEraseMode(bool isErase)
@@ -116,6 +112,27 @@ namespace Board.Client.Pages
         {
             _isLineMode = isLineMode;
         }
+        private async Task HandleClearAndResize()
+        {
+            await SaveCanvasStateToLocalStorage();
+            var confirm = await Js.InvokeAsync<bool>("confirm", "Do you want to clear the canvas?");
+            if (confirm)
+            {
+                await _context2D.ClearRectAsync(0, 0, _canvasSpecs.W, _canvasSpecs.H);
+                var specs = await Interop.GetCanvasSize(_container.Id);
+                _canvasSpecs = new CanvasSpecs(specs.H, specs.W);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        private async Task SaveCanvasStateToLocalStorage()
+        {
+            var imageUrl = await _canvas.ToDataURLAsync();
+            var canvasData = new CanvasModel
+            { Name = Name, ImageUrl = imageUrl, MarkerWidth = _lineWidth, Color = _color };
+            LocalStorage.SetItem("LastCanvas", canvasData);
+        }
+
         private async Task DoubleClickCanvas(MouseEventArgs e)
         {
             _mouseLocation.X = e.ClientX - _canvasLoc.X;

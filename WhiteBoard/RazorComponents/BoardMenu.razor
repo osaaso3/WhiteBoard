@@ -30,5 +30,6 @@
         <span>@LineButtonLabel</span>
     </button>
     <button @onclick="@(async () => await SaveBoardAsImage.InvokeAsync())">Save</button>
+    <button @onclick="@(async () => await ClearAndResize.InvokeAsync())">Clear</button>
     <button style="right:0px" @onclick="@(async () => await StartNew.InvokeAsync())">New</button>
 </div>
