@@ -28,8 +28,7 @@ namespace Board.Client.Pages
         private Location _mouseLocation = new();
         private Location _touchLocation = new();
         private Location _oldTouchLocation = new();
-        private double _canvasW = 1200;
-        private double _canvasH = 600;
+        private CanvasSpecs _canvasSpecs = new(600, 1200);
         private bool _isMouseDown;
         private string _color = "black";
         private bool _shouldRender = true;
@@ -38,6 +37,8 @@ namespace Board.Client.Pages
         private string _selectedOption;
         private string _text;
         private bool _isTouch;
+        private bool _isLineMode;
+        private string _tempDataUrl;
 
         private string Pointer => _isEraseMode ? "erase-mode" : "marker-mode";
         [Parameter]
@@ -47,7 +48,32 @@ namespace Board.Client.Pages
         [Parameter]
         public string DataUrl { get; set; }
 
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                var containerLocation = await Interop.GetContainerLocation(_container.Id);
+                (_canvasLoc.X, _canvasLoc.Y) = (containerLocation.X, containerLocation.Y);
+                var specs = await Interop.GetCanvasSize(_container.Id);
+                _canvasSpecs = new CanvasSpecs(specs.H, specs.W);
+                await InvokeAsync(StateHasChanged);
 
+                _context2D = await _canvas.GetContext2DAsync();
+                if (!string.IsNullOrWhiteSpace(DataUrl))
+                {
+                    await _context2D.DrawImageAsync("image", 0, 0);
+                }
+                // initialize settings
+                await _context2D.GlobalCompositeOperationAsync(CompositeOperation.Source_Over);
+                await _context2D.StrokeStyleAsync(_color);
+                await _context2D.LineWidthAsync(_lineWidth);
+                await _context2D.LineJoinAsync(LineJoin.Round);
+                await _context2D.LineCapAsync(LineCap.Round);
+
+
+            }
+            Console.WriteLine($"color: {_color} line: {_lineWidth} should render: {_shouldRender}");
+        }
         private async void HandleChangeColor(string color)
         {
             _color = string.IsNullOrWhiteSpace(color) ? "black" : color;
@@ -63,12 +89,8 @@ namespace Board.Client.Pages
 
         private async void HandleStartNew()
         {
-            var imageUrl = await _canvas.ToDataURLAsync();
-            var canvasData = new CanvasModel
-            { Name = Name, ImageUrl = imageUrl, MarkerWidth = _lineWidth, Color = _color };
-            LocalStorage.SetItem("LastCanvas", canvasData);
+            await SaveCanvasStateToLocalStorage();
             await IsStartNew.InvokeAsync(true);
-
         }
 
         private async void HandleToggleEraseMode(bool isErase)
@@ -84,39 +106,33 @@ namespace Board.Client.Pages
         {
             _lineWidth = width;
             await _context2D.LineWidthAsync(_lineWidth);
+            await InvokeAsync(StateHasChanged);
         }
-        private void HandleTextChange(string text)
+        private void HandleToggleLineMode(bool isLineMode)
         {
-            _text = text;
+            _isLineMode = isLineMode;
         }
-       
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        private async Task HandleClearAndResize()
         {
-            if (firstRender)
+            await SaveCanvasStateToLocalStorage();
+            var confirm = await Js.InvokeAsync<bool>("confirm", "Do you want to clear the canvas?");
+            if (confirm)
             {
-                _context2D = await _canvas.GetContext2DAsync();
-                if (!string.IsNullOrWhiteSpace(DataUrl))
-                {
-                    await _context2D.DrawImageAsync("image", 0, 0);
-                }
-                // initialize settings
-                await _context2D.GlobalCompositeOperationAsync(CompositeOperation.Source_Over);
-                await _context2D.StrokeStyleAsync(_color);
-                await _context2D.LineWidthAsync(_lineWidth);
-                await _context2D.LineJoinAsync(LineJoin.Round);
-                await _context2D.LineCapAsync(LineCap.Round);
-                var containerLocation = await Interop.GetContainerLocation(_container.Id);
-                (_canvasLoc.X, _canvasLoc.Y) = (containerLocation.X, containerLocation.Y);
-                var width = await Interop.GetWindowSize();
-                if (width <= 641)
-                {
-                    _canvasW = 600;
-                    _canvasH = 300;
-                }
-
+                await _context2D.ClearRectAsync(0, 0, _canvasSpecs.W, _canvasSpecs.H);
+                var specs = await Interop.GetCanvasSize(_container.Id);
+                _canvasSpecs = new CanvasSpecs(specs.H, specs.W);
+                await InvokeAsync(StateHasChanged);
             }
-            Console.WriteLine($"color: {_color} line: {_lineWidth}");
         }
+
+        private async Task SaveCanvasStateToLocalStorage()
+        {
+            var imageUrl = await _canvas.ToDataURLAsync();
+            var canvasData = new CanvasModel
+            { Name = Name, ImageUrl = imageUrl, MarkerWidth = _lineWidth, Color = _color };
+            LocalStorage.SetItem("LastCanvas", canvasData);
+        }
+
         private async Task DoubleClickCanvas(MouseEventArgs e)
         {
             _mouseLocation.X = e.ClientX - _canvasLoc.X;
@@ -137,12 +153,14 @@ namespace Board.Client.Pages
                 await _context2D.StrokeAsync();
             }
         }
-        private void MouseDownCanvas(MouseEventArgs e)
+        private async Task MouseDownCanvas(MouseEventArgs e)
         {
             _shouldRender = false;
             _oldMouseLocation.X = _mouseLocation.X = e.ClientX - _canvasLoc.X;
             _oldMouseLocation.Y = _mouseLocation.Y = e.ClientY - _canvasLoc.Y;
             _isMouseDown = true;
+            if (!_isLineMode) return;
+            _tempDataUrl = await _canvas.ToDataURLAsync();
         }
 
         private void MouseUpCanvas(MouseEventArgs e)
@@ -157,18 +175,25 @@ namespace Board.Client.Pages
             if (!_isMouseDown) return;
             _mouseLocation.X = e.ClientX - _canvasLoc.X;
             _mouseLocation.Y = e.ClientY - _canvasLoc.Y;
+            if (_isLineMode)
+            {
+                await _context2D.ClearRectAsync(0, 0, _canvasSpecs.W, _canvasSpecs.H);
+                await _context2D.DrawImageAsync("tempImage", 0, 0);
+            }
             await DrawCanvasAsync(_mouseLocation.X, _mouseLocation.Y, _oldMouseLocation.X, _oldMouseLocation.Y);
+            if (_isLineMode) return;
             _oldMouseLocation.X = _mouseLocation.X;
             _oldMouseLocation.Y = _mouseLocation.Y;
         }
-        private void TouchStart(TouchEventArgs e)
+        private async Task TouchStart(TouchEventArgs e)
         {
             _shouldRender = false;
             var touch = e.TargetTouches[0];
             _oldTouchLocation.X = _touchLocation.X = touch.ClientX - _canvasLoc.X;
             _oldTouchLocation.Y = _touchLocation.Y = touch.ClientY - _canvasLoc.Y;
             _isTouch = true;
-
+            if (!_isLineMode) return;
+            _tempDataUrl = await _canvas.ToDataURLAsync();
         }
         private async Task TouchMoveAsync(TouchEventArgs e)
         {
@@ -177,7 +202,13 @@ namespace Board.Client.Pages
             var touch = e.TargetTouches[0];
             _touchLocation.X = touch.ClientX - _canvasLoc.X;
             _touchLocation.Y = touch.ClientY - _canvasLoc.Y;
+            if (_isLineMode)
+            {
+                await _context2D.ClearRectAsync(0, 0, _canvasSpecs.W, _canvasSpecs.H);
+                await _context2D.DrawImageAsync("tempImage", 0, 0);
+            }
             await DrawCanvasAsync(_touchLocation.X, _touchLocation.Y, _oldTouchLocation.X, _oldTouchLocation.Y);
+            if (_isLineMode) return;
             _oldTouchLocation.X = _touchLocation.X;
             _oldTouchLocation.Y = _touchLocation.Y;
         }

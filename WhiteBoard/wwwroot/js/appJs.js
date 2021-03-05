@@ -18,3 +18,10 @@ export function getWidowDimentions() {
     console.log('window width ' + output);
     return output;
 }
+export function getCanvasSize(containerId) {
+    let e = document.querySelector(`[_bl_${containerId}=\"\"]`);
+    let bnd = e.getBoundingClientRect();
+    let out = { 'H': bnd.height, 'W': bnd.width };
+    console.log(JSON.stringify(out));
+    return out;
+}

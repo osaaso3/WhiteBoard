@@ -7,6 +7,12 @@
   "theme_color": "#03173d",
   "icons": [
     {
+      "src": "icons/maskable-app-icon-170.png",
+      "sizes": "170x170",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
       "src": "icons/windows10/Square71x71Logo.scale-400.png",
       "sizes": "284x284"
     },

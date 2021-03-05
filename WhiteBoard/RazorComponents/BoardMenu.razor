@@ -9,7 +9,7 @@
 
     <label>
         Thickness:
-        <input type="number" min="1" max="10" @oninput="ChangeWidth" @bind-value="@selectedWidth" />
+        <input type="number" min="1" max="10" @onchange="ChangeWidth" @bind-value="@selectedWidth" @bind-value:event="oninput" />
     </label>
     <label>
         Text:
@@ -23,8 +23,13 @@
     </select>
     <button @onclick="ToggleEraseMode">
         <img src="@ButtonIcon" alt="Button icon" width="30" height="30" />
-        @ButtonLabel
+        <span> @ButtonLabel</span>
+    </button>
+    <button @onclick="ToggleLineMode">
+        <img src="@LineButtonIcon" alt="line button icon" width="30" height="30" />
+        <span>@LineButtonLabel</span>
     </button>
     <button @onclick="@(async () => await SaveBoardAsImage.InvokeAsync())">Save</button>
+    <button @onclick="@(async () => await ClearAndResize.InvokeAsync())">Clear</button>
     <button style="right:0px" @onclick="@(async () => await StartNew.InvokeAsync())">New</button>
 </div>
