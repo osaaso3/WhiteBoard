@@ -1,0 +1,18 @@
+﻿<InputFile OnChange="OnInputFileChange" multiple />
+<p>Response: <code>@imageData</code></p>
+<div class="image-grid">
+    @if (imagesLoaded.Images != null)
+    {
+        @foreach (var image in imagesLoaded.Images)
+        {
+            <div style="border:1px solid black">
+                <img src="@image.ImageBytes.ToImageUrl()" width="200" height="100" />
+                <button @onclick="@(async() => await PostNewImage(image))">Post @image.ImageName</button>
+            </div>
+        }
+    }
+
+</div>
+@code {
+
+}
