@@ -1,0 +1,19 @@
+﻿.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr
+}
+
+.img-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    width: 90%;
+    margin-left: 5%;
+    grid-gap: 6px 6px
+}
+input[type=submit] {
+    height: 60px;
+    width: 140px;
+    background-color: firebrick;
+    color: white;
+    box-shadow: -5px 5px 15px 5px grey;
+}

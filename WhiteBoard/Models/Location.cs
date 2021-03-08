@@ -5,6 +5,6 @@
         public double X { get; set; }
         public double Y { get; set; }
     }
-    public record CanvasSpecs(double H, double W);
+    public record Specs(double H, double W);
 
 }

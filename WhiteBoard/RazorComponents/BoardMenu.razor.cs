@@ -2,83 +2,59 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Blazor.ModalDialog;
+using Blazored.LocalStorage;
 using Board.Client.Models;
+using Board.Client.Services;
 using Microsoft.AspNetCore.Components;
 
 namespace Board.Client.RazorComponents
 {
     public partial class BoardMenu
     {
-        private string ButtonLabel => IsEraseMode ? "Use Marker" : "Use Eraser";
-        private string ButtonIcon => IsEraseMode ? "icons/eraser-32.png" : "icons/marker-32.png";
-        private string LineButtonLabel => LineMode ? "Line Mode" : "Freestyle";
-        private string LineButtonIcon => LineMode ? "icons/straight-line-32.png" : "icons/squiggly-line-32.png";
+        [Inject]
+        private IModalDialogService ModalService { get; set; }
+        [Inject]
+        private AppState AppState { get; set; }
+        [Inject]
+        private ISyncLocalStorageService LocalStorage { get; set; }
+        private string ButtonLabel => AppState.IsEraseMode ? "Use Marker" : "Use Eraser";
+        private string ButtonIcon => AppState.IsEraseMode ? "icons/eraser-32.png" : "icons/marker-32.png";
+        private string LineButtonLabel => AppState.LineMode ? "Line Mode" : "Freestyle";
+        private string LineButtonIcon => AppState.LineMode ? "icons/straight-line-32.png" : "icons/squiggly-line-32.png";
         private double selectedWidth = 3;
         private string _textInput;
-        [Parameter]
-        public string Color { get; set; }
-        [Parameter]
-        public EventCallback<string> ColorChanged { get; set; }
-        [Parameter]
-        public double MarkerWidth { get; set; }
-        [Parameter]
-        public EventCallback<double> MarkerWidthChanged { get; set; }
-        private bool IsEraseMode { get; set; }
-        [Parameter]
-        public EventCallback<bool> IsEraseModeChanged { get; set; }
-        [Parameter]
-        public EventCallback SaveBoardAsImage { get; set; }
-        [Parameter]
-        public EventCallback StartNew { get; set; }
-        [Parameter]
-        public string Text { get; set; }
-        [Parameter]
-        public EventCallback<string> TextChanged { get; set; }
-        [Parameter]
-        public string DblClkOption { get; set; }
-        [Parameter]
-        public EventCallback<string> DblClkOptionChanged { get; set; }
-        [Parameter]
-        public bool LineMode { get; set; }
-        [Parameter]
-        public EventCallback<bool> LineModeChanged { get; set; }
-        [Parameter]
-        public EventCallback ClearAndResize { get; set; }
-
-        private void ChangeColor(ChangeEventArgs e)
-        {
-            Color = e.Value?.ToString() ?? "black";
-            ColorChanged.InvokeAsync(Color);
-        }
-        private void ChangeText(ChangeEventArgs e)
-        {
-            Text = _textInput;
-            TextChanged.InvokeAsync(Text);
-        }
-        private void ChangeSelectOption(ChangeEventArgs e)
-        {
-            DblClkOption = e.Value?.ToString() ?? "Text";
-            DblClkOptionChanged.InvokeAsync(DblClkOption);
-        }
+        
+        private void ChangeColor(ChangeEventArgs e) => AppState.Color = e.Value?.ToString() ?? "black";
+        private void ChangeText(ChangeEventArgs e) => AppState.Text = _textInput;
+        private void ChangeSelectOption(ChangeEventArgs e) => AppState.DblClkOption = e.Value?.ToString() ?? "Text";
         private void ToggleEraseMode()
         {
-            IsEraseMode = !IsEraseMode;
-            IsEraseModeChanged.InvokeAsync(IsEraseMode);
-            if (LineMode) ToggleLineMode();            
+            AppState.IsEraseMode = !AppState.IsEraseMode;
+            if (AppState.LineMode) ToggleLineMode();
         }
-        private void ToggleLineMode()
+        private void ToggleLineMode() => AppState.LineMode = !AppState.LineMode;
+        private void SaveAsImage() => AppState.SaveBoardAsImage = !AppState.SaveBoardAsImage;
+        private void StartNewInvoke() => AppState.StartNew = !AppState.StartNew;
+        private void Clear() => AppState.ClearAndResize = !AppState.ClearAndResize;
+        private void ChangeWidth(ChangeEventArgs e) => AppState.MarkerWidth = selectedWidth;
+        private async Task ShowCreateStickyNote()
         {
-            LineMode = !LineMode;
-            LineModeChanged.InvokeAsync(LineMode);            
+            var options = new ModalDialogOptions
+            {
+                /*Style = "modal-base modal-large",*/ BackgroundClickToClose = true
+            };
+            ModalDialogResult modalResult = await ModalService.ShowDialogAsync<AddStickyNote>("Create a sticky note", options);
+            
+            var result = modalResult.ReturnParameters;
+            var note = result.Get<StickyNote>("StickyNoteModel");
+            var userNotes = LocalStorage.GetItem<UserStickyNotes>($"{AppState.UserName}-StickyNotes");
+            AppState.UserStickyNotes ??= new UserStickyNotes { UserName = AppState.UserName };
+            AppState.UserStickyNotes.StickyNotes ??= new List<StickyNote>();
+            AppState.UserStickyNotes.StickyNotes.Add(note);
+            LocalStorage.SetItem($"{AppState.UserName}-StickyNotes", AppState.UserStickyNotes);
+            AppState.StickyNote = note;
+        }
 
-        }
-        private void ChangeWidth(ChangeEventArgs e)
-        {
-            //if (e.Value == null) return;
-            MarkerWidth = selectedWidth;
-            MarkerWidthChanged.InvokeAsync(MarkerWidth);
-            Console.WriteLine($"Width changed to {e?.Value}");
-        }
-       
     }
 }

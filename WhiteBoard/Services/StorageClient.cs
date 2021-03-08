@@ -1,4 +1,5 @@
 ﻿using Board.Client.Models;
+using Board.Client.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Board.Client.Services
 {
-    public class StorageClient
+    public class StorageClient : IStorageClient
     {
         public HttpClient Client { get; }
         private string apiStringLocal = "http://localhost:7071/api";

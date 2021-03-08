@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using Board.Client.Models;
@@ -12,7 +13,7 @@ using Microsoft.JSInterop;
 
 namespace Board.Client.Pages
 {
-    public partial class WhiteBoard
+    public partial class WhiteBoard : IDisposable
     {
         [Inject]
         private IJSRuntime Js { get; set; }
@@ -20,6 +21,8 @@ namespace Board.Client.Pages
         private WhiteboardInterop Interop { get; set; }
         [Inject]
         private ISyncLocalStorageService LocalStorage { get; set; }
+        [Inject]
+        private AppState AppState { get; set; }
         private ElementReference _container;
         private Canvas _canvas;
         private Context2D _context2D;
@@ -28,7 +31,8 @@ namespace Board.Client.Pages
         private Location _mouseLocation = new();
         private Location _touchLocation = new();
         private Location _oldTouchLocation = new();
-        private CanvasSpecs _canvasSpecs = new(600, 1200);
+        private Specs _canvasSpecs = new(600, 1200);
+        private StickyNote _currentNote = new();
         private bool _isMouseDown;
         private string _color = "black";
         private bool _shouldRender = true;
@@ -39,6 +43,7 @@ namespace Board.Client.Pages
         private bool _isTouch;
         private bool _isLineMode;
         private string _tempDataUrl;
+        
 
         private string Pointer => _isEraseMode ? "erase-mode" : "marker-mode";
         [Parameter]
@@ -48,6 +53,11 @@ namespace Board.Client.Pages
         [Parameter]
         public string DataUrl { get; set; }
 
+        protected override Task OnInitializedAsync()
+        {
+            AppState.PropertyChanged += UpdateState;
+            return base.OnInitializedAsync();
+        }
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
@@ -55,45 +65,49 @@ namespace Board.Client.Pages
                 var containerLocation = await Interop.GetContainerLocation(_container.Id);
                 (_canvasLoc.X, _canvasLoc.Y) = (containerLocation.X, containerLocation.Y);
                 var specs = await Interop.GetCanvasSize(_container.Id);
-                _canvasSpecs = new CanvasSpecs(specs.H, specs.W);
+                _canvasSpecs = new Specs(specs.H, specs.W);
                 await InvokeAsync(StateHasChanged);
 
                 _context2D = await _canvas.GetContext2DAsync();
                 if (!string.IsNullOrWhiteSpace(DataUrl))
-                {
                     await _context2D.DrawImageAsync("image", 0, 0);
-                }
-                // initialize settings
-                await _context2D.GlobalCompositeOperationAsync(CompositeOperation.Source_Over);
-                await _context2D.StrokeStyleAsync(_color);
-                await _context2D.LineWidthAsync(_lineWidth);
-                await _context2D.LineJoinAsync(LineJoin.Round);
-                await _context2D.LineCapAsync(LineCap.Round);
-
+                
+                await InitCanvasSettings();
 
             }
             Console.WriteLine($"color: {_color} line: {_lineWidth} should render: {_shouldRender}");
         }
-        private async void HandleChangeColor(string color)
+
+        private async Task InitCanvasSettings()
         {
+            await _context2D.GlobalCompositeOperationAsync(CompositeOperation.Source_Over);
+            await _context2D.StrokeStyleAsync(_color);
+            await _context2D.LineWidthAsync(_lineWidth);
+            await _context2D.LineJoinAsync(LineJoin.Round);
+            await _context2D.LineCapAsync(LineCap.Round);
+        }
+
+        private async Task HandleChangeColor(string color)
+        {
+            //string color = AppState.Color;
             _color = string.IsNullOrWhiteSpace(color) ? "black" : color;
             await _context2D.StrokeStyleAsync(_color);
         }
 
-        private async void HandleSave()
+        private async Task HandleSave()
         {
             var imageUrl = await _canvas.ToDataURLAsync();
             var imageBytes = Convert.FromBase64String(imageUrl.Split(',')[1]);
             await Interop.DownloadProjectFile($"{Name}.png", imageBytes);
         }
 
-        private async void HandleStartNew()
+        private async Task HandleStartNew()
         {
             await SaveCanvasStateToLocalStorage();
             await IsStartNew.InvokeAsync(true);
         }
 
-        private async void HandleToggleEraseMode(bool isErase)
+        private async Task HandleToggleEraseMode(bool isErase)
         {
             _isEraseMode = isErase;
             _color = isErase ? "white" : "black";
@@ -102,28 +116,26 @@ namespace Board.Client.Pages
             await _context2D.LineWidthAsync(_lineWidth);
         }
 
-        private async void HandleWidthChange(double width)
+        private async Task HandleWidthChange(double width)
         {
             _lineWidth = width;
             await _context2D.LineWidthAsync(_lineWidth);
             await InvokeAsync(StateHasChanged);
         }
-        private void HandleToggleLineMode(bool isLineMode)
-        {
-            _isLineMode = isLineMode;
-        }
+        
         private async Task HandleClearAndResize()
         {
             await SaveCanvasStateToLocalStorage();
-            var confirm = await Js.InvokeAsync<bool>("confirm", "Do you want to clear the canvas?");
+            var confirm = await Js.InvokeAsync<bool>("confirm", "Do you want to clear the whiteboard?");
             if (confirm)
             {
                 await _context2D.ClearRectAsync(0, 0, _canvasSpecs.W, _canvasSpecs.H);
                 var specs = await Interop.GetCanvasSize(_container.Id);
-                _canvasSpecs = new CanvasSpecs(specs.H, specs.W);
+                _canvasSpecs = new Specs(specs.H, specs.W);
                 await InvokeAsync(StateHasChanged);
             }
         }
+        
 
         private async Task SaveCanvasStateToLocalStorage()
         {
@@ -151,6 +163,10 @@ namespace Board.Client.Pages
                 await _context2D.BeginPathAsync();
                 await _context2D.EllipseAsync(_mouseLocation.X, _mouseLocation.Y, 25 * _lineWidth, 20 * _lineWidth, 0, 0, 360);
                 await _context2D.StrokeAsync();
+            }
+            else if (_selectedOption == "Sticky")
+            {
+                await _context2D.DrawImageAsync("stickyNote", _mouseLocation.X, _mouseLocation.Y);
             }
         }
         private async Task MouseDownCanvas(MouseEventArgs e)
@@ -226,7 +242,42 @@ namespace Board.Client.Pages
             await ctx.LineToAsync(x, y);
             await ctx.StrokeAsync();
         }
-
+        private Task HandleDblClickOption(string dblClickOption)
+        {
+            _selectedOption = dblClickOption;
+            return Task.CompletedTask;
+        }
+        private Task HandleToggleLineMode(bool isLineMode)
+        {
+            _isLineMode = isLineMode;
+            return Task.CompletedTask;
+        }
+        private void HandleNewSticky()
+        {
+            _currentNote = AppState.StickyNote;
+            _selectedOption = "Sticky";
+        }
+        private async void UpdateState(object sender, PropertyChangedEventArgs e)
+        {
+            var prop = e.PropertyName;
+            
+            Task runTask = prop switch
+            {
+                nameof(AppState.Color) => HandleChangeColor(AppState.Color),
+                nameof(AppState.IsEraseMode) => HandleToggleEraseMode(AppState.IsEraseMode),
+                nameof(AppState.LineMode) => InvokeAsync(() => _isLineMode = AppState.LineMode),
+                nameof(AppState.MarkerWidth) => HandleWidthChange(AppState.MarkerWidth),
+                nameof(AppState.DblClkOption) => InvokeAsync(() => _selectedOption = AppState.DblClkOption),
+                nameof(AppState.ClearAndResize) => HandleClearAndResize(),
+                nameof(AppState.SaveBoardAsImage) => HandleSave(),
+                nameof(AppState.Text) => InvokeAsync(() => _text = AppState.Text),
+                nameof(AppState.StartNew) => HandleStartNew(),
+                nameof(AppState.StickyNote) => InvokeAsync(HandleNewSticky),
+                _ => InvokeAsync(StateHasChanged)
+            };
+            await runTask;
+            await InvokeAsync(StateHasChanged);
+        }
         protected override bool ShouldRender()
         {
             if (!_shouldRender)
@@ -235,6 +286,11 @@ namespace Board.Client.Pages
                 return false;
             }
             return base.ShouldRender();
+        }
+
+        public void Dispose()
+        {
+            AppState.PropertyChanged -= UpdateState;
         }
     }
 }
