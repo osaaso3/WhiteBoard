@@ -12,7 +12,7 @@ else
     <div>
         <h6>Create new whiteboard</h6>
         <input @bind-value="name" @bind-value:event="oninput" />
-        <button @onclick="@(()=> start = true)">Start</button>
+        <button @onclick="StartWhiteboard">Start</button>
         <hr />
         <p>Or upload a previous whiteboard</p>
         <InputFile OnChange="OnInputFileChange" />
@@ -27,7 +27,7 @@ else
             <Authorized>
                 <div style="margin-right: 1rem">
                     Hello, @context.User.Identity.Name!
-                    <a href="/.auth/logout?post_logout_redirect_uri=/" style="color: white"> Log out</a>
+                    <a href="/.auth/logout?post_logout_redirect_uri=/" style="color: blue"> Log out</a>
                 </div>                
                 <div class="app-icon">
                     <NavLink href="whiteBoardHome">
@@ -38,7 +38,7 @@ else
             </Authorized>
             <NotAuthorized>
                 <div style="margin-right: 1rem">
-                    <a href="/login-providers" style="color: white">Log in</a>
+                    <LoginProvider/>
                 </div>
             </NotAuthorized>
         </AuthorizeView>

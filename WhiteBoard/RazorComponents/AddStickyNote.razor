@@ -1,4 +1,4 @@
-﻿<EditForm Model="StickyNoteModel" OnValidSubmit="RenderNote">
+﻿<EditForm Model="StickyNoteModel" OnValidSubmit="Render">
     <DataAnnotationsValidator />
     <ValidationSummary />
     <div class="form-grid">
@@ -29,16 +29,18 @@
             <InputText @bind-Value="StickyNoteModel.Header" DisplayName="Header"></InputText>
         </label>
         <label>
-            Text:
-            <InputTextArea @bind-Value="StickyNoteModel.Text" DisplayName="Text"></InputTextArea>
-        </label>
-        <label>
             Font-size:
             <InputNumber TValue="int" @bind-Value="StickyNoteModel.FontSize"></InputNumber>
         </label>
+        <label class="long">
+            Text:<br />
+            <InputTextArea @bind-Value="StickyNoteModel.Text" DisplayName="Text"></InputTextArea>
+        </label>
+
     </div>
     <br />
-    <input type="submit" value="View" /><br />
+    <input type="submit" value="View" />
+    <br />
 </EditForm>
 <hr />
 <br />

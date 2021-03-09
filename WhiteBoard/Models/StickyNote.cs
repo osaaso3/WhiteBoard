@@ -32,17 +32,17 @@ namespace Board.Client.Models
     }
     public enum NoteColor
     {
-        Blue, Green, Light_Blue, Light_Green, Orange, Pink, Purple, Teal, Yellow
+        Blue, Green, LightBlue, LightGreen, Orange, Pink, Purple, Teal, Yellow
     }
     public static class NoteExtensions
     {
         private static readonly Dictionary<NoteSize, Specs> noteSpecs = new()
         {
             { NoteSize.ExtraSmall, new Specs(96, 96) },
-            { NoteSize.Small, new Specs(128, 128) },
-            { NoteSize.Medium, new Specs(160, 160) },
-            { NoteSize.Large, new Specs(192, 192) },
-            { NoteSize.ExtraLarge, new Specs(224, 224) }
+            { NoteSize.Small, new Specs(160, 160) },
+            { NoteSize.Medium, new Specs(224, 224) },
+            { NoteSize.Large, new Specs(288, 288) },
+            { NoteSize.ExtraLarge, new Specs(352, 352) }
         };
         public static Specs AsSpecs(this NoteSize noteSize)
         {
@@ -50,7 +50,7 @@ namespace Board.Client.Models
         }
         public static string ToImageName(this NoteColor noteColor)
         {
-            return Enum.GetName(noteColor).ToLowerInvariant().Replace('_', '-');
+            return Enum.GetName(noteColor).ToLower();
         }
     }
 }

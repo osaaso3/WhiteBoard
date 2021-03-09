@@ -1,6 +1,7 @@
 ﻿using Board.Client.Models;
 using Board.Client.Services;
 using Board.Client.Services.Auth;
+using Board.Client.Services.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using System;
@@ -15,7 +16,7 @@ namespace Board.Client.RazorComponents
     public partial class ImageMenuModal
     {
         [Inject]
-        private StorageClient StorageClient { get; set; }
+        private IStorageClient StorageClient { get; set; }
         [Inject]
         private ICustomAuthenticationStateProvider AuthState { get; set; }
         private string name;

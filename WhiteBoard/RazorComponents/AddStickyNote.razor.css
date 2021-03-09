@@ -11,9 +11,21 @@
     grid-gap: 6px 6px
 }
 input[type=submit] {
-    height: 60px;
-    width: 140px;
+    height: 40px;
+    width: 120px;
     background-color: firebrick;
     color: white;
+    border:1px solid black;
+    margin-left:40%;
+    margin-top:1rem;
     box-shadow: -5px 5px 15px 5px grey;
+}
+.long {
+    grid-column:auto/span 2;
+    height:5rem;
+}
+::deep textarea {
+    width:80%;
+    height:100%;
+    margin-left:10%;
 }

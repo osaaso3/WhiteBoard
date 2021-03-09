@@ -20,10 +20,14 @@ namespace Board.Client.Services
         private bool saveBoardAsImage;
         private bool startNew;
         private StickyNote stickyNote;
+        private bool undo;
+        private bool redo;
 
         public event PropertyChangedEventHandler PropertyChanged;
         public string UserName { get; set; }
+        public bool IsAuth { get; set; }
         public UserStickyNotes UserStickyNotes { get; set; }
+        public CanvasHistory<string> CanvasHistory { get; set; } = new(10);
         public string Color
         {
             get => color;
@@ -68,6 +72,16 @@ namespace Board.Client.Services
         {
             get => clearAndResize;
             set { clearAndResize = value; OnPropertyChanged(); }
+        }
+        public bool Undo
+        {
+            get => undo;
+            set { undo = value; OnPropertyChanged(); }
+        }
+        public bool Redo
+        {
+            get => redo;
+            set { redo = value; OnPropertyChanged(); }
         }
         public StickyNote StickyNote
         {

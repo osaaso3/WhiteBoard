@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using Board.Client.Models;
@@ -43,6 +44,7 @@ namespace Board.Client.Pages
         private bool _isTouch;
         private bool _isLineMode;
         private string _tempDataUrl;
+        private bool _isRecord;
         
 
         private string Pointer => _isEraseMode ? "erase-mode" : "marker-mode";
@@ -142,7 +144,23 @@ namespace Board.Client.Pages
             var imageUrl = await _canvas.ToDataURLAsync();
             var canvasData = new CanvasModel
             { Name = Name, ImageUrl = imageUrl, MarkerWidth = _lineWidth, Color = _color };
+            AppState.CanvasHistory.Push(imageUrl);
+           
             LocalStorage.SetItem("LastCanvas", canvasData);
+            LocalStorage.SetItem("CurrentHistory", AppState.CanvasHistory);
+        }
+        private void SaveToHistory(string imageUrl)
+        {
+            //try
+            //{
+            //    if (AppState.CanvasHistory.Peek() == imageUrl) return;
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine(ex.Message);
+            //}
+            Console.WriteLine("Add to stack");
+            AppState.CanvasHistory.Push(imageUrl);
         }
 
         private async Task DoubleClickCanvas(MouseEventArgs e)
@@ -168,6 +186,8 @@ namespace Board.Client.Pages
             {
                 await _context2D.DrawImageAsync("stickyNote", _mouseLocation.X, _mouseLocation.Y);
             }
+            _tempDataUrl = await _canvas.ToDataURLAsync();
+            SaveToHistory(_tempDataUrl);
         }
         private async Task MouseDownCanvas(MouseEventArgs e)
         {
@@ -175,12 +195,14 @@ namespace Board.Client.Pages
             _oldMouseLocation.X = _mouseLocation.X = e.ClientX - _canvasLoc.X;
             _oldMouseLocation.Y = _mouseLocation.Y = e.ClientY - _canvasLoc.Y;
             _isMouseDown = true;
-            if (!_isLineMode) return;
+            //if (!_isLineMode) return;
             _tempDataUrl = await _canvas.ToDataURLAsync();
+            _isRecord = true;
+            //SaveToHistory(_tempDataUrl);
         }
 
         private void MouseUpCanvas(MouseEventArgs e)
-        {
+        {           
             _shouldRender = false;
             _isMouseDown = false;
         }
@@ -189,6 +211,12 @@ namespace Board.Client.Pages
         {
             _shouldRender = false;
             if (!_isMouseDown) return;
+            if (_isRecord)
+            {
+                _isRecord = false;
+                SaveToHistory(_tempDataUrl);
+            }
+
             _mouseLocation.X = e.ClientX - _canvasLoc.X;
             _mouseLocation.Y = e.ClientY - _canvasLoc.Y;
             if (_isLineMode)
@@ -208,13 +236,21 @@ namespace Board.Client.Pages
             _oldTouchLocation.X = _touchLocation.X = touch.ClientX - _canvasLoc.X;
             _oldTouchLocation.Y = _touchLocation.Y = touch.ClientY - _canvasLoc.Y;
             _isTouch = true;
-            if (!_isLineMode) return;
+            //if (!_isLineMode) return;
             _tempDataUrl = await _canvas.ToDataURLAsync();
+            _isRecord = true;
+            //SaveToHistory(_tempDataUrl);
         }
         private async Task TouchMoveAsync(TouchEventArgs e)
         {
             _shouldRender = false;
             if (!_isTouch) return;
+            if (_isRecord)
+            {
+                _isRecord = false;
+               
+                SaveToHistory(_tempDataUrl);
+            }
             var touch = e.TargetTouches[0];
             _touchLocation.X = touch.ClientX - _canvasLoc.X;
             _touchLocation.Y = touch.ClientY - _canvasLoc.Y;
@@ -229,11 +265,28 @@ namespace Board.Client.Pages
             _oldTouchLocation.Y = _touchLocation.Y;
         }
         private void TouchEnd(TouchEventArgs e)
-        {
+        {            
             _shouldRender = false;
             _isTouch = false;
         }
-
+        private async Task UndoAsync()
+        {
+            (bool success, string imageUrl) = AppState.CanvasHistory.TryUndo();
+            if (success)
+                _tempDataUrl = imageUrl;
+            await InvokeAsync(StateHasChanged);
+            await _context2D.ClearRectAsync(0, 0, _canvasSpecs.W, _canvasSpecs.H);
+            await _context2D.DrawImageAsync("tempImage", 0, 0);
+        }
+        private async Task RedoAsync()
+        {
+            (bool success, string imageUrl) = AppState.CanvasHistory.TryRedo();
+            if (success)
+                _tempDataUrl = imageUrl;
+            await InvokeAsync(StateHasChanged);
+            await _context2D.ClearRectAsync(0, 0, _canvasSpecs.W, _canvasSpecs.H);
+            await _context2D.DrawImageAsync("tempImage", 0, 0);
+        }
         private async Task DrawCanvasAsync(double oldX, double oldY, double x, double y)
         {
             await using var ctx = await _context2D.CreateBatchAsync();
@@ -242,16 +295,7 @@ namespace Board.Client.Pages
             await ctx.LineToAsync(x, y);
             await ctx.StrokeAsync();
         }
-        private Task HandleDblClickOption(string dblClickOption)
-        {
-            _selectedOption = dblClickOption;
-            return Task.CompletedTask;
-        }
-        private Task HandleToggleLineMode(bool isLineMode)
-        {
-            _isLineMode = isLineMode;
-            return Task.CompletedTask;
-        }
+        
         private void HandleNewSticky()
         {
             _currentNote = AppState.StickyNote;
@@ -273,10 +317,12 @@ namespace Board.Client.Pages
                 nameof(AppState.Text) => InvokeAsync(() => _text = AppState.Text),
                 nameof(AppState.StartNew) => HandleStartNew(),
                 nameof(AppState.StickyNote) => InvokeAsync(HandleNewSticky),
+                nameof(AppState.Undo) => UndoAsync(),
+                nameof(AppState.Redo) => RedoAsync(),
                 _ => InvokeAsync(StateHasChanged)
             };
             await runTask;
-            await InvokeAsync(StateHasChanged);
+            //await InvokeAsync(StateHasChanged);
         }
         protected override bool ShouldRender()
         {

@@ -18,13 +18,14 @@ namespace Board.Client.RazorComponents
         private AppState AppState { get; set; }
         [Inject]
         private ISyncLocalStorageService LocalStorage { get; set; }
+               
         private string ButtonLabel => AppState.IsEraseMode ? "Use Marker" : "Use Eraser";
         private string ButtonIcon => AppState.IsEraseMode ? "icons/eraser-32.png" : "icons/marker-32.png";
         private string LineButtonLabel => AppState.LineMode ? "Line Mode" : "Freestyle";
         private string LineButtonIcon => AppState.LineMode ? "icons/straight-line-32.png" : "icons/squiggly-line-32.png";
         private double selectedWidth = 3;
         private string _textInput;
-        
+        private string _selectOption;
         private void ChangeColor(ChangeEventArgs e) => AppState.Color = e.Value?.ToString() ?? "black";
         private void ChangeText(ChangeEventArgs e) => AppState.Text = _textInput;
         private void ChangeSelectOption(ChangeEventArgs e) => AppState.DblClkOption = e.Value?.ToString() ?? "Text";
@@ -38,6 +39,8 @@ namespace Board.Client.RazorComponents
         private void StartNewInvoke() => AppState.StartNew = !AppState.StartNew;
         private void Clear() => AppState.ClearAndResize = !AppState.ClearAndResize;
         private void ChangeWidth(ChangeEventArgs e) => AppState.MarkerWidth = selectedWidth;
+        private void Undo() => AppState.Undo = !AppState.Undo;
+        private void Redo() => AppState.Redo = !AppState.Redo;
         private async Task ShowCreateStickyNote()
         {
             var options = new ModalDialogOptions
@@ -47,11 +50,13 @@ namespace Board.Client.RazorComponents
             ModalDialogResult modalResult = await ModalService.ShowDialogAsync<AddStickyNote>("Create a sticky note", options);
             
             var result = modalResult.ReturnParameters;
+            if (!modalResult.Success) return;
             var note = result.Get<StickyNote>("StickyNoteModel");
             var userNotes = LocalStorage.GetItem<UserStickyNotes>($"{AppState.UserName}-StickyNotes");
             AppState.UserStickyNotes ??= new UserStickyNotes { UserName = AppState.UserName };
             AppState.UserStickyNotes.StickyNotes ??= new List<StickyNote>();
             AppState.UserStickyNotes.StickyNotes.Add(note);
+            _selectOption = "Sticky";
             LocalStorage.SetItem($"{AppState.UserName}-StickyNotes", AppState.UserStickyNotes);
             AppState.StickyNote = note;
         }
