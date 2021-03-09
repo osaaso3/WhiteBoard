@@ -1,7 +1,4 @@
-﻿/*@media (max-width: 640.98px) {
-   .whiteboard-container {
-       width:100vw;
-       height:100vh;
-       position:fixed;
-   }
-}*/
+﻿.home-grid {
+    display:grid;
+    grid-template-columns: 2fr 1fr
+}

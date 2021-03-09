@@ -48,3 +48,45 @@ a, .btn-link {
         right: 0.75rem;
         top: 0.5rem;
     }
+.modal-base {
+    border-style: solid;
+    box-shadow: 0 2px 2px rgba(0,0,0,.25);
+    background-color:white;
+    /*max-height: 99vh;*/ /*99% of the browser height*/
+    overflow-y: scroll;
+    padding: 12px;
+    z-index:3;
+}
+
+    .modal-base .modal-xlarge {
+        min-width: 95vw;
+        max-width: 98vw;
+        min-height: 75vh;
+    }
+    .modal-base .modal-large {
+        min-width: 80vw;
+        max-width: 90vw;
+        min-height: 50vh;
+        max-height: 90vh;
+    }
+
+    .modal-base .modal-medium {
+        min-width: 50vw;
+        max-width: 75vw;
+        min-height: 30vh;
+        max-height: 70vh;
+    }
+
+    .modal-base .modal-small {
+        min-width: 25vw;
+        max-width: 50vw;
+        min-height: 25vh;
+        max-height: 50vh;
+    }
+
+    .modal-base .modal-xsmall {
+        min-width: 10vw;
+        max-width: 25vw;
+        min-height: 10vh;
+        max-height: 25vh;
+    }

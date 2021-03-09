@@ -1,0 +1,60 @@
+﻿<EditForm Model="StickyNoteModel" OnValidSubmit="Render">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-grid">
+        <label>
+            Name:
+            <InputText DisplayName="Name" @bind-Value="StickyNoteModel.Name"></InputText>
+        </label>
+        <label>
+            Color:
+            <InputSelect DisplayName="Color" TValue="NoteColor" @bind-Value="StickyNoteModel.BackgroundColor">
+                @foreach (var color in Enum.GetValues(typeof(NoteColor)))
+                {
+                    <option @key="color" value="@color">@color.ToString()</option>
+                }
+            </InputSelect>
+        </label>
+        <label>
+            Size:
+            <InputSelect DisplayName="Size" TValue="NoteSize" @bind-Value="StickyNoteModel.Size">
+                @foreach (var size in Enum.GetValues(typeof(NoteSize)))
+                {
+                    <option @key="size" value="@size">@size.ToString()</option>
+                }
+            </InputSelect>
+        </label>
+        <label>
+            Header:
+            <InputText @bind-Value="StickyNoteModel.Header" DisplayName="Header"></InputText>
+        </label>
+        <label>
+            Font-size:
+            <InputNumber TValue="int" @bind-Value="StickyNoteModel.FontSize"></InputNumber>
+        </label>
+        <label class="long">
+            Text:<br />
+            <InputTextArea @bind-Value="StickyNoteModel.Text" DisplayName="Text"></InputTextArea>
+        </label>
+
+    </div>
+    <br />
+    <input type="submit" value="View" />
+    <br />
+</EditForm>
+<hr />
+<br />
+<button @onclick="SubmitRender">Note Complete</button>
+<img height="@StickyNoteModel.Size.AsSpecs().H" width="@StickyNoteModel.Size.AsSpecs().W" src="@StickyNoteModel.ImageUrl" />
+<Canvas @ref="_canvas" hidden height="@StickyNoteModel.Size.AsSpecs().H" width="@StickyNoteModel.Size.AsSpecs().W"></Canvas>
+
+<div class="img-grid">
+    @foreach (NoteColor note in Enum.GetValues(typeof(NoteColor)))
+    {
+        <label @key="note">
+            @note.ToImageName()
+            <img id="@note.ToImageName()" src="icons/stickyNotes/@($"{note.ToImageName()}")-note.png" height="128" width="128" alt="Sticky note" />
+        </label>
+    }
+</div>
+

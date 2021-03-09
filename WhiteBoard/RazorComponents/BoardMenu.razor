@@ -15,11 +15,12 @@
         Text:
         <input @bind-value="@_textInput" @onchange="ChangeText" @bind-value:event="oninput" />
     </label>
-    <select @onchange="ChangeSelectOption" class="opts">
+    <select @onchange="ChangeSelectOption" @bind-value="_selectOption" @bind-value:event="oninput" class="opts">
         <option value="">Dbl-click options</option>
         <option value="Text">Text</option>
         <option value="Oval">Oval</option>
         <option value="Rectangle">Rectangle</option>
+        <option value="Sticky">Sticky Note</option>
     </select>
     <button @onclick="ToggleEraseMode">
         <img src="@ButtonIcon" alt="Button icon" width="30" height="30" />
@@ -29,7 +30,14 @@
         <img src="@LineButtonIcon" alt="line button icon" width="30" height="30" />
         <span>@LineButtonLabel</span>
     </button>
-    <button @onclick="@(async () => await SaveBoardAsImage.InvokeAsync())">Save</button>
-    <button @onclick="@(async () => await ClearAndResize.InvokeAsync())">Clear</button>
-    <button style="right:0px" @onclick="@(async () => await StartNew.InvokeAsync())">New</button>
+    <button class="show-modal" @onclick="ShowCreateStickyNote">Sticky Note</button>
+    <button @onclick="@SaveAsImage">Save</button>
+    <button @onclick="@Clear">Clear</button>
+    <button @onclick="Undo">
+        <img src="icons/undo-32.png" alt="Undo icon" width="30" height="30" />
+    </button>
+    <button @onclick="Redo">
+        <img src="icons/redo-32.png" alt="Redo icon" width="30" height="30" />
+    </button>
+    <button style="right:0px" @onclick="@StartNewInvoke">New</button>
 </div>

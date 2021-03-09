@@ -30,10 +30,10 @@ namespace Board.Client.Services
             var module = await moduleTask.Value;
             return await module.InvokeAsync<double>("getWidowDimentions");
         }
-        public async ValueTask<CanvasSpecs> GetCanvasSize(string containerId)
+        public async ValueTask<Specs> GetCanvasSize(string containerId)
         {
             var module = await moduleTask.Value;
-            return await module.InvokeAsync<CanvasSpecs>("getCanvasSize", containerId);
+            return await module.InvokeAsync<Specs>("getCanvasSize", containerId);
         }
     }
 }
