@@ -37,7 +37,7 @@ namespace Board.Client.Services
         }
         public async Task<string> PostNewImage(string userId, ImageData image)
         {
-            var result = await Client.PostAsJsonAsync($"{apiStringLocal}/PostImage/{userId}", image);
+            var result = await Client.PostAsJsonAsync($"api/PostImage/{userId}", image);
             return await result.Content.ReadAsStringAsync();
         }
         
