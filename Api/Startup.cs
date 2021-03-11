@@ -12,8 +12,10 @@ namespace Board.Api
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            string connectionStringCosmos = Environment.GetEnvironmentVariable("AZURE_COSMOS_CONNECTION_STRING") ?? "";
-            builder.Services.AddSingleton(s => new CosmosClient(connectionStringCosmos));            
+            //string connectionStringCosmos = Environment.GetEnvironmentVariable("AZURE_COSMOS_CONNECTION_STRING") ?? "";
+            //builder.Services.AddSingleton(s => new CosmosClient(connectionStringCosmos));
+            builder.Services.AddHttpContextAccessor();
+            
         }
     }
 }

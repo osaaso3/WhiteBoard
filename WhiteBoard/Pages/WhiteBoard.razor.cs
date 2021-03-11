@@ -77,7 +77,7 @@ namespace Board.Client.Pages
                 await InitCanvasSettings();
 
             }
-            Console.WriteLine($"color: {_color} line: {_lineWidth} should render: {_shouldRender}");
+            //Console.WriteLine($"color: {_color} line: {_lineWidth} should render: {_shouldRender}");
         }
 
         private async Task InitCanvasSettings()
@@ -106,6 +106,7 @@ namespace Board.Client.Pages
         private async Task HandleStartNew()
         {
             await SaveCanvasStateToLocalStorage();
+            AppState.CanvasHistory.Clear();
             await IsStartNew.InvokeAsync(true);
         }
 
@@ -134,6 +135,7 @@ namespace Board.Client.Pages
                 await _context2D.ClearRectAsync(0, 0, _canvasSpecs.W, _canvasSpecs.H);
                 var specs = await Interop.GetCanvasSize(_container.Id);
                 _canvasSpecs = new Specs(specs.H, specs.W);
+                AppState.CanvasHistory.Clear();
                 await InvokeAsync(StateHasChanged);
             }
         }
@@ -144,7 +146,7 @@ namespace Board.Client.Pages
             var imageUrl = await _canvas.ToDataURLAsync();
             var canvasData = new CanvasModel
             { Name = Name, ImageUrl = imageUrl, MarkerWidth = _lineWidth, Color = _color };
-            AppState.CanvasHistory.Push(imageUrl);
+            //AppState.CanvasHistory.Push(imageUrl);
            
             LocalStorage.SetItem("LastCanvas", canvasData);
             LocalStorage.SetItem("CurrentHistory", AppState.CanvasHistory);
@@ -160,7 +162,7 @@ namespace Board.Client.Pages
             //    Console.WriteLine(ex.Message);
             //}
             Console.WriteLine("Add to stack");
-            AppState.CanvasHistory.Push(imageUrl);
+            AppState.CanvasHistory.Insert(imageUrl);
         }
 
         private async Task DoubleClickCanvas(MouseEventArgs e)
@@ -201,21 +203,27 @@ namespace Board.Client.Pages
             //SaveToHistory(_tempDataUrl);
         }
 
-        private void MouseUpCanvas(MouseEventArgs e)
-        {           
+        private async Task MouseUpCanvas(MouseEventArgs e)
+        {
             _shouldRender = false;
+            if (_isMouseDown)
+            {
+                _tempDataUrl = await _canvas.ToDataURLAsync();
+                SaveToHistory(_tempDataUrl);
+            }
             _isMouseDown = false;
+            
         }
 
         private async Task MouseMoveCanvasAsync(MouseEventArgs e)
         {
             _shouldRender = false;
             if (!_isMouseDown) return;
-            if (_isRecord)
-            {
-                _isRecord = false;
-                SaveToHistory(_tempDataUrl);
-            }
+            //if (_isRecord)
+            //{
+            //    _isRecord = false;
+            //    SaveToHistory(_tempDataUrl);
+            //}
 
             _mouseLocation.X = e.ClientX - _canvasLoc.X;
             _mouseLocation.Y = e.ClientY - _canvasLoc.Y;
@@ -271,6 +279,7 @@ namespace Board.Client.Pages
         }
         private async Task UndoAsync()
         {
+            //SaveToHistory(await _canvas.ToDataURLAsync());
             (bool success, string imageUrl) = AppState.CanvasHistory.TryUndo();
             if (success)
                 _tempDataUrl = imageUrl;

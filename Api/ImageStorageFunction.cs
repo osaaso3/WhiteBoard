@@ -21,12 +21,12 @@ namespace Board.Api
     public class ImageStorageFunction
     {
         private readonly string connectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
-       
+        string connectionStringCosmos = Environment.GetEnvironmentVariable("AZURE_COSMOS_CONNECTION_STRING") ?? "";
         private readonly Container _cosmosContainer;
-        public ImageStorageFunction(CosmosClient cosmosClient)
-        {
-            _cosmosContainer = cosmosClient.GetContainer("WhiteboardDb", "Images");
-        }
+        //public ImageStorageFunction(CosmosClient cosmosClient)
+        //{
+        //    _cosmosContainer = cosmosClient.GetContainer("WhiteboardDb", "Images");
+        //}
 
         [FunctionName("PostImage")]
         public async Task<IActionResult> PostImage(
@@ -43,16 +43,36 @@ namespace Board.Api
                 var imgContainer = GetContainer(userName.ToValidContainerName());
                 string fileName = $"{imageData.ImageName}.png";
                 var imgBlob = imgContainer.GetBlobClient(fileName);
-                await imgBlob.UploadAsync(stream, overwrite:true);
+                await imgBlob.UploadAsync(stream, overwrite: true);
             }
             catch (Exception e)
             {
                 return new BadRequestObjectResult($"Error saving file: {e.Message}\r\n{e.StackTrace}");
             }
+            //imageData.Id ??= Guid.NewGuid().ToString();
+            //imageData.ImageBytes = new byte[0];
+            //log.LogInformation(JsonConvert.SerializeObject(imageData, Formatting.Indented));
+            //await _cosmosContainer.UpsertItemAsync(imageData);
+            return new OkObjectResult($"Image {imageData.ImageName} uploaded successfully");
+        }
+        [FunctionName("SaveImage")]
+        public async Task<IActionResult> SaveImage(
+          [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "SaveImage/{userName}")] HttpRequest req, string userName, ILogger log)
+        {
+            log.LogInformation("C# HTTP trigger function SaveImage processed a request.");
+            var reqString = await req.ReadAsStringAsync();
+            
+            var imageData = JsonConvert.DeserializeObject<ImageData>(reqString);
+            await using var stream = new MemoryStream(imageData.ImageBytes);
+            var cosmosClient = new CosmosClient(connectionStringCosmos);
+            await cosmosClient.CreateDatabaseIfNotExistsAsync("WhiteboardDb");
+            var cosmosContainer = cosmosClient.GetContainer("WhiteboardDb", "Images");
             imageData.Id ??= Guid.NewGuid().ToString();
             imageData.ImageBytes = new byte[0];
+            imageData.UserName ??= userName;
             log.LogInformation(JsonConvert.SerializeObject(imageData, Formatting.Indented));
-            await _cosmosContainer.UpsertItemAsync(imageData);
+            var result = await cosmosContainer.UpsertItemAsync(imageData);
+            log.LogInformation($"Results:\r\nStatus code: {result.StatusCode}\r\nContent: {result.Resource}\r\nDiags: {result.Diagnostics}");
             return new OkObjectResult($"Image {imageData.ImageName} uploaded successfully");
         }
         [FunctionName("GetAppImages")]
@@ -60,7 +80,7 @@ namespace Board.Api
            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "GetAppImages")] HttpRequest req, ILogger log)
         {
             log.LogInformation("C# HTTP trigger function GetAppImages processed a request.");
-            
+
             var imageList = new ImageList { Category = "image", Images = new List<ImageData>() };
             var container = GetContainer();
             await foreach (var blob in container.GetBlobsAsync())
@@ -116,7 +136,7 @@ namespace Board.Api
                 imageQuery.AddRange(resultSet.Where(x => x.UserName == userName && x.Category == category));
             }
             var imageList = new ImageList { Category = category, Images = new List<ImageData>() };
-            
+
             var container = GetContainer(userName.ToValidContainerName());
             await foreach (var blob in container.GetBlobsAsync())
             {
@@ -144,7 +164,7 @@ namespace Board.Api
 
             return container;
         }
-      
+
         #endregion
     }
     public static class Helpers

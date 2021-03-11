@@ -38,8 +38,17 @@ namespace Board.Client.Services
         public async Task<string> PostNewImage(string userId, ImageData image)
         {
             var result = await Client.PostAsJsonAsync($"api/PostImage/{userId}", image);
-            return await result.Content.ReadAsStringAsync();
+            string resultMessage = await result.Content.ReadAsStringAsync();
+            if (!result.IsSuccessStatusCode)
+            {
+                return resultMessage;
+            }
+            var cosmosResult = await Client.PostAsJsonAsync($"api/SaveImage/{userId}", image);
+            return $"Blob Result: {resultMessage} CosmosClient: {await cosmosResult.Content.ReadAsStringAsync()}";
+
+            
         }
+
         
     }
 }
