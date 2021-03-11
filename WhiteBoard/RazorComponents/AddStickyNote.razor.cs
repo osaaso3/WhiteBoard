@@ -1,5 +1,6 @@
 ﻿using Blazor.ModalDialog;
 using Board.Client.Models;
+using Board.Client.Services.Interfaces;
 using Excubo.Blazor.Canvas;
 using Excubo.Blazor.Canvas.Contexts;
 using Microsoft.AspNetCore.Components;
@@ -14,7 +15,8 @@ namespace Board.Client.RazorComponents
     {
         [Inject]
         private IModalDialogService ModalService { get; set; }
-        private ElementReference _container;
+        [Inject]
+        private IStorageClient StorageClient { get; set; }
         private Canvas _canvas;
         private Context2D _context2D;
         private Specs CanvasSpecs { get; set; } = new(400, 400);
@@ -34,6 +36,19 @@ namespace Board.Client.RazorComponents
             }
             await base.OnAfterRenderAsync(firstRender);
         }
+        private async Task SaveToCloud(string username)
+        {
+            var image = new ImageData
+            {
+                ImageName = StickyNoteModel.Name,
+                UserName = username,
+                Category = "StickyNote",
+                Description = StickyNoteModel.Header,
+                ImageBytes = StickyNoteModel.NoteImageData
+            };
+            var response = await StorageClient.PostNewImage(username, image);
+            Console.WriteLine($"Save to cloud response: {response}");
+        }
         private void SubmitRender()
         {
             var parameters = new ModalDialogParameters
@@ -44,6 +59,7 @@ namespace Board.Client.RazorComponents
         }
         private async Task Render()
         {
+            //ToDo Fix rendering so text is properly contained in stickynote image
             await RenderNote();
             await RenderNote();
         }
@@ -56,15 +72,8 @@ namespace Board.Client.RazorComponents
             await _context2D.DrawImageAsync(colorImg, 0, 0, 128, 128, 0, 0, spec.W, spec.H);
             var textLines = await SplitRenderLines(StickyNoteModel.Text, spec.W * .8);
 
-            //await using (Batch2D ctx = await _context2D.CreateBatchAsync())
-            //{
-            //await ctx.DrawImageAsync(colorImg, 0, 0);
             await _context2D.FontAsync($"bold {headerFont}px sarif");
             await _context2D.FillTextAsync(StickyNoteModel.Header, 50, 25);
-            //await ctx.BeginPathAsync();
-            //await ctx.MoveToAsync(0, headerFont + 20);
-            //await ctx.LineToAsync(spec.W, headerFont + 20);
-            //await ctx.StrokeAsync();
 
             await _context2D.FontAsync($"italic small-caps {StickyNoteModel.FontSize}px/{headerFont}px Georgia sarif");
             var start = headerFont + 50;
@@ -74,7 +83,7 @@ namespace Board.Client.RazorComponents
                 start += headerFont;
             }
 
-            //}
+           
             var imageData = await _canvas.ToDataURLAsync();
             StickyNoteModel.NoteImageData = Convert.FromBase64String(imageData.Split(',')[1]);
             await InvokeAsync(StateHasChanged);
@@ -83,12 +92,23 @@ namespace Board.Client.RazorComponents
         {
             var words = text.Split(" ");
             var lines = new List<string>();
-            var currentLine = words[0];
+            var currentLine = words[0].Replace("'", "`");
+            
             for (int i = 1; i < words.Length; i++)
             {
-                var word = words[i];
-                var measure = await _context2D.MeasureTextAsync($"{currentLine} {word}");
-                var width = measure.Width;
+                double width = 0;
+                var word = words[i].Replace("'", "`");
+                try
+                {
+                    var measure = await _context2D.MeasureTextAsync($"{currentLine} {word}");
+                    width = measure.Width;
+                    Console.WriteLine($"Success on word {i} ({word}): ");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error on word {i} ({word}): {ex.ToString().Substring(0, 10)}... ");
+                }
+                //var width = measure.Width;
                 if (width < maxwidth)
                 {
                     currentLine += $" {word}";

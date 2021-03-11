@@ -29,10 +29,17 @@ namespace Board.Client.Services
             Console.WriteLine($"Images retrieved: {string.Join(", ", result.Images.Select(x => x.ImageName))}");
             return result;
         }
+        public async Task<ImageList> GetUserTypeImages(string userId, string category)
+        {
+            var result = await Client.GetFromJsonAsync<ImageList>($"api/GetUserTypeImages/{userId}/{category}");
+            Console.WriteLine($"Images retrieved: {string.Join(", ", result.Images.Select(x => x.ImageName))}");
+            return result;
+        }
         public async Task<string> PostNewImage(string userId, ImageData image)
         {
             var result = await Client.PostAsJsonAsync($"{apiStringLocal}/PostImage/{userId}", image);
             return await result.Content.ReadAsStringAsync();
         }
+        
     }
 }

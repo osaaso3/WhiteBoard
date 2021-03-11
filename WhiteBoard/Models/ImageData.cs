@@ -7,12 +7,18 @@ namespace Board.Client.Models
 {
     public class ImageData
     {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+        [JsonPropertyName("userName")]
+        public string UserName { get; set; }
+        [JsonPropertyName("category")]
+        public string Category { get; set; } //ToDo change to Enum
         [JsonPropertyName("imageName")]
         public string ImageName { get; set; }
         [JsonPropertyName("imageBytes")]
         public byte[] ImageBytes { get; set; }
-        [JsonPropertyName("imageText")]
-        public string ImageText { get; set; }
+        [JsonPropertyName("description")]
+        public string Description { get; set; }
         [JsonPropertyName("createdOnDate")]
         public DateTimeOffset? CreatedOnDate { get; set; }
     }

@@ -6,6 +6,7 @@
 .img-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
+    justify-items:center;
     width: 90%;
     margin-left: 5%;
     grid-gap: 6px 6px
@@ -28,4 +29,9 @@ input[type=submit] {
     width:80%;
     height:100%;
     margin-left:10%;
+}
+.img-grid span {
+    margin-right:auto;
+    margin-left:auto;
+    bottom:0;
 }

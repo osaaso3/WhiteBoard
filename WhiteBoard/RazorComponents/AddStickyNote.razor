@@ -44,7 +44,13 @@
 </EditForm>
 <hr />
 <br />
-<button @onclick="SubmitRender">Note Complete</button>
+<button @onclick="SubmitRender">Add Note to Whiteboard</button>
+<br />
+<AuthorizeView>
+    <Authorized>
+        <button @onclick="(() => SaveToCloud(context.User.Identity.Name))">Save to cloud</button>
+    </Authorized>
+</AuthorizeView>
 <img height="@StickyNoteModel.Size.AsSpecs().H" width="@StickyNoteModel.Size.AsSpecs().W" src="@StickyNoteModel.ImageUrl" />
 <Canvas @ref="_canvas" hidden height="@StickyNoteModel.Size.AsSpecs().H" width="@StickyNoteModel.Size.AsSpecs().W"></Canvas>
 
@@ -52,7 +58,7 @@
     @foreach (NoteColor note in Enum.GetValues(typeof(NoteColor)))
     {
         <label @key="note">
-            @note.ToImageName()
+            <span> @note.ToImageName()</span>
             <img id="@note.ToImageName()" src="icons/stickyNotes/@($"{note.ToImageName()}")-note.png" height="128" width="128" alt="Sticky note" />
         </label>
     }
