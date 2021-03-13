@@ -20,13 +20,13 @@ namespace Board.Api
 {
     public class ImageStorageFunction
     {
-        private readonly string connectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
-        string connectionStringCosmos = Environment.GetEnvironmentVariable("AZURE_COSMOS_CONNECTION_STRING") ?? "";
-        private readonly Container _cosmosContainer;
-        //public ImageStorageFunction(CosmosClient cosmosClient)
-        //{
-        //    _cosmosContainer = cosmosClient.GetContainer("WhiteboardDb", "Images");
-        //}
+        private readonly string connectionStringBlob = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
+        private readonly string connectionStringCosmos = Environment.GetEnvironmentVariable("AZURE_COSMOS_CONNECTION_STRING") ?? "";
+        private readonly CosmosClient CosmosClient;
+        public ImageStorageFunction()
+        {
+            CosmosClient = new CosmosClient(connectionStringCosmos);
+        }
 
         [FunctionName("PostImage")]
         public async Task<IActionResult> PostImage(
@@ -49,10 +49,7 @@ namespace Board.Api
             {
                 return new BadRequestObjectResult($"Error saving file: {e.Message}\r\n{e.StackTrace}");
             }
-            //imageData.Id ??= Guid.NewGuid().ToString();
-            //imageData.ImageBytes = new byte[0];
-            //log.LogInformation(JsonConvert.SerializeObject(imageData, Formatting.Indented));
-            //await _cosmosContainer.UpsertItemAsync(imageData);
+
             return new OkObjectResult($"Image {imageData.ImageName} uploaded successfully");
         }
         [FunctionName("SaveImage")]
@@ -66,20 +63,19 @@ namespace Board.Api
             {
                 var imageData = JsonConvert.DeserializeObject<ImageData>(reqString);
                 await using var stream = new MemoryStream(imageData.ImageBytes);
-                var cosmosClient = new CosmosClient(connectionStringCosmos);
-                await cosmosClient.CreateDatabaseIfNotExistsAsync("WhiteboardDb");
-                var cosmosContainer = cosmosClient.GetContainer("WhiteboardDb", "Images");
-                imageData.Id ??= Guid.NewGuid().ToString();
+
+                var cosmosContainer = CosmosClient.GetContainer("WhiteboardDb", "Images");
+                imageData.Id ??= $"{imageData.UserName}-{imageData.Category}-{imageData.ImageName}";
                 imageData.ImageBytes = new byte[0];
                 imageData.UserName ??= userName;
                 log.LogInformation(JsonConvert.SerializeObject(imageData, Formatting.Indented));
                 var result = await cosmosContainer.UpsertItemAsync(imageData);
-                log.LogInformation($"Results:\r\nStatus code: {result.StatusCode}\r\nContent: {result.Resource}\r\nDiags: {result.Diagnostics}");
-                return new OkObjectResult($"Image {imageData.ImageName} uploaded successfully");
+                log.LogInformation($"Results:\r\nStatus code: {result.StatusCode}\r\nContent: {result.Resource}");
+                return new OkObjectResult($"Image {imageData.ImageName} saved successfully");
             }
             catch (Exception ex)
             {
-                return new BadRequestObjectResult(ex.ToString());
+                return new BadRequestObjectResult(ex);
             }
         }
         [FunctionName("GetAppImages")]
@@ -106,28 +102,40 @@ namespace Board.Api
             HttpRequest req, ILogger log, string userName)
         {
             log.LogInformation("C# HTTP trigger function HandImageGetStorage processed a request.");
-            var imageIterator = _cosmosContainer.GetItemLinqQueryable<ImageData>().ToFeedIterator();
-            var imageQuery = new List<ImageData>();
-            while (imageIterator.HasMoreResults)
+            try
             {
-                var resultSet = await imageIterator.ReadNextAsync();
-                imageQuery.AddRange(resultSet.Where(x => x.UserName == userName));
+                var cosmosContainer = CosmosClient.GetContainer("WhiteboardDb", "Images");
+                var imageQuery = new List<ImageData>();
+                using (var imageIterator = cosmosContainer.GetItemLinqQueryable<ImageData>().ToFeedIterator())
+                {
+                    while (imageIterator.HasMoreResults)
+                    {
+                        var resultSet = await imageIterator.ReadNextAsync();
+                        imageQuery.AddRange(resultSet.Where(x => x.UserName == userName));
+                    }
+                }
+                var imageList = new ImageList { Category = "general", Images = new List<ImageData>() };
+                var container = GetContainer(userName.ToValidContainerName());
+                await foreach (var blob in container.GetBlobsAsync())
+                {
+                    var blobName = blob.Name;
+                    var imageMatch = imageQuery.Find(x => x.ImageName == blobName.NoFileExt());
+                    if (imageMatch == null) continue;
+                    var client = container.GetBlobClient(blobName);
+                    await using var stream = await client.OpenReadAsync();
+                    imageMatch.CreatedOnDate = blob.Properties.CreatedOn;
+                    imageMatch.ImageBytes = await stream.ReadFully();
+                    imageList.Images.Add(imageMatch);
+                }
+                log.LogInformation($"Image data retrieved for {string.Join(", ", imageList.Images.Select(x => x.ImageName))}");
+                return new OkObjectResult(imageList);
             }
-            var imageList = new ImageList { Category = "general", Images = new List<ImageData>() };
-            var container = GetContainer(userName.ToValidContainerName());
-            await foreach (var blob in container.GetBlobsAsync())
+            catch (Exception ex)
             {
-                var blobName = blob.Name;
-                var imageMatch = imageQuery.Find(x => x.ImageName == blobName.NoFileExt());
-                if (imageMatch == null) continue;
-                var client = container.GetBlobClient(blobName);
-                await using var stream = await client.OpenReadAsync();
-                imageMatch.CreatedOnDate = blob.Properties.CreatedOn;
-                imageMatch.ImageBytes = await stream.ReadFully();
-                imageList.Images.Add(imageMatch);
+                log.LogError($"{ex.Message}\r\n{ex.StackTrace}");
+                return new BadRequestObjectResult($"{ex.Message}\r\n{ex.StackTrace}");
             }
-            log.LogInformation($"Image data retrieved for {string.Join(", ", imageList.Images.Select(x => x.ImageName))}");
-            return new OkObjectResult(imageList);
+
         }
         [FunctionName("GetUserTypeImages")]
         public async Task<IActionResult> GetUserTypeImages(
@@ -135,12 +143,15 @@ namespace Board.Api
             HttpRequest req, ILogger log, string userName, string category)
         {
             log.LogInformation("C# HTTP trigger function HandImageGetStorage processed a request.");
-            var imageIterator = _cosmosContainer.GetItemLinqQueryable<ImageData>().ToFeedIterator();
             var imageQuery = new List<ImageData>();
-            while (imageIterator.HasMoreResults)
+            var cosmosContainer = CosmosClient.GetContainer("WhiteboardDb", "Images");
+            using (var imageIterator = cosmosContainer.GetItemLinqQueryable<ImageData>().ToFeedIterator())
             {
-                var resultSet = await imageIterator.ReadNextAsync();
-                imageQuery.AddRange(resultSet.Where(x => x.UserName == userName && x.Category == category));
+                while (imageIterator.HasMoreResults)
+                {
+                    var resultSet = await imageIterator.ReadNextAsync();
+                    imageQuery.AddRange(resultSet.Where(x => x.UserName == userName && x.Category == category));
+                }
             }
             var imageList = new ImageList { Category = category, Images = new List<ImageData>() };
 
@@ -163,7 +174,7 @@ namespace Board.Api
 
         private BlobContainerClient GetContainer(string containerName = "appimages")
         {
-            string blobConnectionString = connectionString;
+            string blobConnectionString = connectionStringBlob;
             string blobContainerName = containerName;
 
             var container = new BlobContainerClient(blobConnectionString, blobContainerName);
@@ -184,7 +195,7 @@ namespace Board.Api
         }
         public static string NoFileExt(this string file)
         {
-            return file.Substring(0, file.LastIndexOf('.') + 1);
+            return file.Substring(0, file.LastIndexOf('.'));
         }
         public static string ToValidContainerName(this string str)
         {

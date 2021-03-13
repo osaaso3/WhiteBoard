@@ -6,5 +6,5 @@
         public string ImageUrl { get; set; }
         public string Color { get; set; }
         public double MarkerWidth { get; set; }
-    }   
+    }
 }

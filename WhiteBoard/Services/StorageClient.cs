@@ -12,7 +12,7 @@ namespace Board.Client.Services
     public class StorageClient : IStorageClient
     {
         public HttpClient Client { get; }
-        private string apiStringLocal = "http://localhost:7071/api";
+
         public StorageClient(HttpClient httpClient)
         {
             Client = httpClient;
@@ -47,9 +47,9 @@ namespace Board.Client.Services
             var cosmosResult = await Client.PostAsJsonAsync($"api/SaveImage/{userId}", image);
             return $"Blob Result: {resultMessage} CosmosClient: {await cosmosResult.Content.ReadAsStringAsync()}";
 
-            
+
         }
 
-        
+
     }
 }

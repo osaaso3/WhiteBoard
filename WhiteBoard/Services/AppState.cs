@@ -16,12 +16,8 @@ namespace Board.Client.Services
         private string text;
         private string dblClkOption;
         private bool lineMode;
-        private bool clearAndResize;
-        private bool saveBoardAsImage;
-        private bool startNew;
         private StickyNote stickyNote;
-        private bool undo;
-        private bool redo;
+        private ImageData currentImage;
 
         public event PropertyChangedEventHandler PropertyChanged;
         public string UserName { get; set; }
@@ -43,16 +39,7 @@ namespace Board.Client.Services
             get => isEraseMode;
             set { isEraseMode = value; OnPropertyChanged(); }
         }
-        public bool SaveBoardAsImage
-        {
-            get => saveBoardAsImage;
-            set { saveBoardAsImage = value; OnPropertyChanged(); }
-        }
-        public bool StartNew
-        {
-            get => startNew;
-            set { startNew = value; OnPropertyChanged(); }
-        }
+
         public string Text
         {
             get => text;
@@ -68,25 +55,15 @@ namespace Board.Client.Services
             get => lineMode;
             set { lineMode = value; OnPropertyChanged(); }
         }
-        public bool ClearAndResize
-        {
-            get => clearAndResize;
-            set { clearAndResize = value; OnPropertyChanged(); }
-        }
-        public bool Undo
-        {
-            get => undo;
-            set { undo = value; OnPropertyChanged(); }
-        }
-        public bool Redo
-        {
-            get => redo;
-            set { redo = value; OnPropertyChanged(); }
-        }
         public StickyNote StickyNote
         {
             get => stickyNote;
             set { stickyNote = value; OnPropertyChanged(); }
+        }
+        public ImageData CurrentImage
+        {
+            get => currentImage;
+            set { currentImage = value; OnPropertyChanged(); }
         }
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

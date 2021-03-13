@@ -15,7 +15,7 @@ namespace Board.Client.Models
         [Required]
         public NoteSize Size { get; set; }
         public string FontStyle { get; set; }
-        [Range(6,48, ErrorMessage = "Font size must be a value between 6 and 48")]
+        [Range(6, 48, ErrorMessage = "Font size must be a value between 6 and 48")]
         public int FontSize { get; set; }
         public string Header { get; set; }
         public byte[] NoteImageData { get; set; }
@@ -46,7 +46,7 @@ namespace Board.Client.Models
         };
         public static Specs AsSpecs(this NoteSize noteSize)
         {
-            return noteSpecs.TryGetValue(noteSize, out var val) ? val : new Specs(0,0);
+            return noteSpecs.TryGetValue(noteSize, out var val) ? val : new Specs(0, 0);
         }
         public static string ToImageName(this NoteColor noteColor)
         {

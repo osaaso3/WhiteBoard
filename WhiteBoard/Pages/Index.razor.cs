@@ -50,7 +50,7 @@ namespace Board.Client.Pages
             string format = "image/png";
             var imageFile = e.File;
 
-            name = imageFile.Name.Substring(0, imageFile.Name.Length - 4);
+            name = imageFile.Name[0..^4];
             var resizedImageFile = await imageFile.RequestImageFileAsync(format,
                 1200, 600);
             byte[] buffer = new byte[resizedImageFile.Size];
@@ -63,7 +63,7 @@ namespace Board.Client.Pages
         private void RecoverLast()
         {
             var lastImage = LocalStorage.GetItem<CanvasModel>("LastCanvas");
-            AppState.CanvasHistory = LocalStorage.GetItem<CanvasHistory<string>>("CurrentHistory");
+            AppState.CanvasHistory.Clear();
             name = lastImage.Name;
             imageDataUrl = lastImage.ImageUrl;
         }

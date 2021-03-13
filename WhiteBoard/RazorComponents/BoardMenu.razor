@@ -31,12 +31,18 @@
         <span>@LineButtonLabel</span>
     </button>
     <button class="show-modal" @onclick="ShowCreateStickyNote">Sticky Note</button>
-    <button @onclick="@SaveAsImage">Save</button>
-    <button @onclick="@Clear">Clear</button>
-    <button @onclick="Undo">
+    <button @onclick="@SaveAsImageInvoke">
+        <img src="icons/save-32.png" alt="Save icon" width="30" height="30" />
+        <span>Save</span>
+    </button>
+    <button @onclick="@ClearInvoke">
+        <img src="icons/delete-32.png" alt="Delete icon" width="30" height="30" />
+        <span>Clear</span>
+    </button>
+    <button @onclick="UndoInvoke">
         <img src="icons/undo-32.png" alt="Undo icon" width="30" height="30" />
     </button>
-    <button @onclick="Redo">
+    <button @onclick="RedoInvoke">
         <img src="icons/redo-32.png" alt="Redo icon" width="30" height="30" />
     </button>
     <button style="right:0px" @onclick="@StartNewInvoke">New</button>

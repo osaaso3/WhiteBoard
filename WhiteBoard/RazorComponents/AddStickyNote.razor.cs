@@ -20,7 +20,7 @@ namespace Board.Client.RazorComponents
         private Canvas _canvas;
         private Context2D _context2D;
         private Specs CanvasSpecs { get; set; } = new(400, 400);
-        private StickyNote StickyNoteModel { get; set; } = new();
+        private StickyNote StickyNoteModel { get; set; } = new() { FontSize = 12 };
         private bool showImage;
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -82,8 +82,6 @@ namespace Board.Client.RazorComponents
                 await _context2D.StrokeTextAsync(text, 10, start);
                 start += headerFont;
             }
-
-           
             var imageData = await _canvas.ToDataURLAsync();
             StickyNoteModel.NoteImageData = Convert.FromBase64String(imageData.Split(',')[1]);
             await InvokeAsync(StateHasChanged);
@@ -93,7 +91,7 @@ namespace Board.Client.RazorComponents
             var words = text.Split(" ");
             var lines = new List<string>();
             var currentLine = words[0].Replace("'", "`");
-            
+
             for (int i = 1; i < words.Length; i++)
             {
                 double width = 0;
@@ -123,8 +121,5 @@ namespace Board.Client.RazorComponents
             return lines;
         }
     }
-    public static class CanvasExtend
-    {
 
-    }
 }

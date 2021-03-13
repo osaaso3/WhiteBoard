@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Board.Client.Models
 {
-    public class CanvasHistory<T> : IEnumerable<T>
+    public class CanvasHistory<T> /*: IEnumerable<T>*/
     {
         private Stack<T> HistoryStack { get; set; }
         protected List<T> HistoryList { get; set; }
@@ -32,10 +32,10 @@ namespace Board.Client.Models
             set => HistoryList.Insert(index, value);
         }
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            return HistoryList.GetEnumerator();
-        }
+        //public IEnumerator<T> GetEnumerator()
+        //{
+        //    return HistoryList.GetEnumerator();
+        //}
         public void Insert(T item)
         {
             RedoStack.Clear();
@@ -82,9 +82,9 @@ namespace Board.Client.Models
             return HistoryStack.Peek() ?? default;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
+        //IEnumerator IEnumerable.GetEnumerator()
+        //{
+        //    return this.GetEnumerator();
+        //}
     }
 }
