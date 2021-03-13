@@ -61,19 +61,26 @@ namespace Board.Api
         {
             log.LogInformation("C# HTTP trigger function SaveImage processed a request.");
             var reqString = await req.ReadAsStringAsync();
-            
-            var imageData = JsonConvert.DeserializeObject<ImageData>(reqString);
-            await using var stream = new MemoryStream(imageData.ImageBytes);
-            var cosmosClient = new CosmosClient(connectionStringCosmos);
-            await cosmosClient.CreateDatabaseIfNotExistsAsync("WhiteboardDb");
-            var cosmosContainer = cosmosClient.GetContainer("WhiteboardDb", "Images");
-            imageData.Id ??= Guid.NewGuid().ToString();
-            imageData.ImageBytes = new byte[0];
-            imageData.UserName ??= userName;
-            log.LogInformation(JsonConvert.SerializeObject(imageData, Formatting.Indented));
-            var result = await cosmosContainer.UpsertItemAsync(imageData);
-            log.LogInformation($"Results:\r\nStatus code: {result.StatusCode}\r\nContent: {result.Resource}\r\nDiags: {result.Diagnostics}");
-            return new OkObjectResult($"Image {imageData.ImageName} uploaded successfully");
+
+            try
+            {
+                var imageData = JsonConvert.DeserializeObject<ImageData>(reqString);
+                await using var stream = new MemoryStream(imageData.ImageBytes);
+                var cosmosClient = new CosmosClient(connectionStringCosmos);
+                await cosmosClient.CreateDatabaseIfNotExistsAsync("WhiteboardDb");
+                var cosmosContainer = cosmosClient.GetContainer("WhiteboardDb", "Images");
+                imageData.Id ??= Guid.NewGuid().ToString();
+                imageData.ImageBytes = new byte[0];
+                imageData.UserName ??= userName;
+                log.LogInformation(JsonConvert.SerializeObject(imageData, Formatting.Indented));
+                var result = await cosmosContainer.UpsertItemAsync(imageData);
+                log.LogInformation($"Results:\r\nStatus code: {result.StatusCode}\r\nContent: {result.Resource}\r\nDiags: {result.Diagnostics}");
+                return new OkObjectResult($"Image {imageData.ImageName} uploaded successfully");
+            }
+            catch (Exception ex)
+            {
+                return new BadRequestObjectResult(ex.ToString());
+            }
         }
         [FunctionName("GetAppImages")]
         public async Task<IActionResult> GetAppImages(

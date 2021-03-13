@@ -41,6 +41,7 @@ namespace Board.Client.Services
             string resultMessage = await result.Content.ReadAsStringAsync();
             if (!result.IsSuccessStatusCode)
             {
+                Console.WriteLine($"Error: {resultMessage}");
                 return resultMessage;
             }
             var cosmosResult = await Client.PostAsJsonAsync($"api/SaveImage/{userId}", image);
