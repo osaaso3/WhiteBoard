@@ -1,14 +1,33 @@
 ﻿.form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 6px;
+    width: 90%;
+    margin-left: 5%;
+    padding: 1rem 2rem;
+    border: 1px solid black;
+    box-shadow: -5px 5px 15px 5px grey;
 }
-
+.form-grid label {
+    line-height:18px
+}
 .img-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
+    justify-items:center;
     width: 90%;
     margin-left: 5%;
     grid-gap: 6px 6px
+}
+.img-grid .note {
+    position:relative;
+}
+.note .inner-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size:1.2rem;
 }
 input[type=submit] {
     height: 40px;
@@ -21,11 +40,21 @@ input[type=submit] {
     box-shadow: -5px 5px 15px 5px grey;
 }
 .long {
-    grid-column:auto/span 2;
-    height:5rem;
+    grid-column: auto/span 2;
+    height:6rem;
+    margin-bottom:2rem;
+}
+.long span {
+    margin-left:10%;
+    font-size:110%;
 }
 ::deep textarea {
     width:80%;
     height:100%;
     margin-left:10%;
+}
+.img-grid span {
+    margin-right:auto;
+    margin-left:auto;
+    bottom:0;
 }

@@ -12,7 +12,7 @@ namespace Board.Client.Services
     public class StorageClient : IStorageClient
     {
         public HttpClient Client { get; }
-        private string apiStringLocal = "http://localhost:7071/api";
+
         public StorageClient(HttpClient httpClient)
         {
             Client = httpClient;
@@ -29,10 +29,27 @@ namespace Board.Client.Services
             Console.WriteLine($"Images retrieved: {string.Join(", ", result.Images.Select(x => x.ImageName))}");
             return result;
         }
+        public async Task<ImageList> GetUserTypeImages(string userId, string category)
+        {
+            var result = await Client.GetFromJsonAsync<ImageList>($"api/GetUserTypeImages/{userId}/{category}");
+            Console.WriteLine($"Images retrieved: {string.Join(", ", result.Images.Select(x => x.ImageName))}");
+            return result;
+        }
         public async Task<string> PostNewImage(string userId, ImageData image)
         {
-            var result = await Client.PostAsJsonAsync($"{apiStringLocal}/PostImage/{userId}", image);
-            return await result.Content.ReadAsStringAsync();
+            var result = await Client.PostAsJsonAsync($"api/PostImage/{userId}", image);
+            string resultMessage = await result.Content.ReadAsStringAsync();
+            if (!result.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Error: {resultMessage}");
+                return resultMessage;
+            }
+            var cosmosResult = await Client.PostAsJsonAsync($"api/SaveImage/{userId}", image);
+            return $"Blob Result: {resultMessage} CosmosClient: {await cosmosResult.Content.ReadAsStringAsync()}";
+
+
         }
+
+
     }
 }

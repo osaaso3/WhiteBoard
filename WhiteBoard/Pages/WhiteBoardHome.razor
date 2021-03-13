@@ -1,7 +1,31 @@
 ﻿@page "/whiteBoardHome"
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize()]
-<ImageMenuModal></ImageMenuModal>
+<h2>Under Construction</h2>
+<h4>Not much here, but laying the groundwork to maintain user-specific features, Including:</h4>
+<ul>
+    <li>Image collections to paste to Whiteboard</li>
+    <li>Image sprite collections to paste animations to Whiteboard</li>
+    <li>Sticky note collection to modify or use on new Whiteboards</li>
+    <li>Whiteboard groups to create larger Whiteboards, and/or Whiteboard slide shows</li>
+</ul>
+
+<InputFile OnChange="OnInputFileChange" multiple />
+<button @onclick="GetUserImages">Get All Images From Cloud</button>
+<p>Response: <code>@imageData</code></p>
+<div class="image-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr">
+    @if (imagesLoaded.Images != null)
+    {
+        @foreach (var image in imagesLoaded.Images)
+        {
+            <div style="border:1px solid black">
+                <img src="@image.ImageBytes.ToImageUrl()" width="200" height="100" />
+                <button @onclick="@(async() => await PostNewImage(image))">Post @image.ImageName</button>
+            </div>
+        }
+    }
+
+</div>
 @code {
 
 }

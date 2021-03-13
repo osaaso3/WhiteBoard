@@ -1,4 +1,6 @@
-﻿using Board.Client.Models;
+﻿using Blazor.ModalDialog;
+using Blazored.LocalStorage;
+using Board.Client.Models;
 using Board.Client.Services;
 using Board.Client.Services.Auth;
 using Board.Client.Services.Interfaces;
@@ -16,43 +18,40 @@ namespace Board.Client.RazorComponents
     public partial class ImageMenuModal
     {
         [Inject]
-        private IStorageClient StorageClient { get; set; }
+        private ISyncLocalStorageService LocalStorage { get; set; }
         [Inject]
-        private ICustomAuthenticationStateProvider AuthState { get; set; }
-        private string name;
+        private AppState AppState { get; set; }
+        [Inject]
+        private IModalDialogService ModalService { get; set; }
+        [Inject]
+        private IStorageClient StorageClient { get; set; }
+        public ImageData SelectedImage { get; set; }
+        private string selectedCategory;
         private string imageDataUrl;
         private ImageList imagesLoaded = new();
         private string imageData;
-        //private ImageData uploadedImage = new();
-
-        private async Task OnInputFileChange(InputFileChangeEventArgs e)
+        
+        private void SelectCategory(ChangeEventArgs e)
         {
-            imagesLoaded.Images = new List<ImageData>();
-            string format = "image/png";
-            //var imageFile = e.File;
-            var max = 6;
-            foreach (var imageFile in e.GetMultipleFiles(max))
-            {
-                var uploadedImage = new ImageData();
-                name = imageFile.Name.Substring(0, imageFile.Name.Length - 4);
-                var resizedImageFile = await imageFile.RequestImageFileAsync(format,
-                    400, 200);
-                byte[] buffer = new byte[resizedImageFile.Size];
-
-                await resizedImageFile.OpenReadStream().ReadAsync(buffer);
-                imageDataUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
-                uploadedImage.ImageBytes = buffer;
-                uploadedImage.ImageName = name;
-                imagesLoaded.Images.Add(uploadedImage);
-
-            }
+            selectedCategory = e.Value?.ToString() ?? "";
         }
-        private async Task PostNewImage(ImageData image)
+        private async Task GetUserImages()
         {
-            var auth = await AuthState.GetAuthenticationStateAsync();
-            Console.WriteLine("Claims types:" + JsonSerializer.Serialize(auth.User.Claims.Select(x => x.Type)));
-            var user = auth.User.Identity.Name;
-            imageData = await StorageClient.PostNewImage(user, image);
+            var user = AppState.UserName;
+            imagesLoaded = await StorageClient.GetUserImage(user);
+        }
+        private async Task GetUserTypeImages()
+        {
+            var user = AppState.UserName;
+            imagesLoaded = await StorageClient.GetUserTypeImages(user, selectedCategory);
+        }
+        private void SelectImage(ImageData image)
+        {
+            var parameters = new ModalDialogParameters
+            {
+                {"SelectedImage",SelectedImage }
+            };
+            ModalService.Close(true, parameters);
         }
     }
 }

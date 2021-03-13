@@ -1,10 +1,12 @@
 ﻿
-<BoardMenu/>
+<BoardMenu Clear="HandleClearAndResize" Undo="UndoAsync" Redo="RedoAsync" StartNew="HandleStartNew" SaveAsImage="HandleSave" />
 <div class="canvas-container @Pointer" @ref="_container">
     <Canvas @onmousemove="MouseMoveCanvasAsync" @onmouseup="MouseUpCanvas" @onmouseout="MouseUpCanvas" @onmousedown="MouseDownCanvas" @ondblclick="DoubleClickCanvas" @ontouchstart="TouchStart" @ontouchmove="TouchMoveAsync" @ontouchend="TouchEnd" width="@_canvasSpecs.W" height="@_canvasSpecs.H" @ref="_canvas" style="border: 1px solid black; height:100%; width:100%"></Canvas>
 </div>
 <img id="image" hidden src="@DataUrl" alt="hidden image" />
 <img id="tempImage" hidden src="@_tempDataUrl" alt="hidden image" />
 <img id="stickyNote" hidden src="@_currentNote.ImageUrl" alt="hidden note image" />
+@*<img id="userImage" hidden src="@AppState.CurrentImage.ImageBytes.ToImageUrl()" alt="hidden image" />*@
+
 
 

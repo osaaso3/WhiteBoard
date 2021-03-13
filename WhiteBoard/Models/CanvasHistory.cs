@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Board.Client.Models
 {
-    public class CanvasHistory<T> : IEnumerable<T>
+    public class CanvasHistory<T> /*: IEnumerable<T>*/
     {
         private Stack<T> HistoryStack { get; set; }
         protected List<T> HistoryList { get; set; }
@@ -20,17 +20,27 @@ namespace Board.Client.Models
             RedoStack = new Stack<T>(capacity);
             HistoryList = new List<T>();
         }
+        public void Clear()
+        {
+            HistoryList.Clear();
+            HistoryStack.Clear();
+            RedoStack.Clear();
+        }
         public T this[int index]
         {
             get => HistoryList[index];
             set => HistoryList.Insert(index, value);
         }
 
-        public IEnumerator<T> GetEnumerator()
+        //public IEnumerator<T> GetEnumerator()
+        //{
+        //    return HistoryList.GetEnumerator();
+        //}
+        public void Insert(T item)
         {
-            return HistoryList.GetEnumerator();
+            RedoStack.Clear();
+            Push(item);
         }
-
         public void Push(T item)
         {
             HistoryList.Add(item);
@@ -54,11 +64,11 @@ namespace Board.Client.Models
         }
         public (bool, T) TryUndo()
         {
-            if (HistoryList.Count == 0) return (false, default);
+            if (HistoryList.Count < 2) return (false, default);
             HistoryList.RemoveAt(HistoryList.Count - 1);
             var pop = HistoryStack.Pop();
             RedoStack.Push(pop);
-            return (true, pop);
+            return (true, HistoryStack.Peek());
         }
         public (bool, T) TryRedo()
         {
@@ -72,9 +82,9 @@ namespace Board.Client.Models
             return HistoryStack.Peek() ?? default;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
+        //IEnumerator IEnumerable.GetEnumerator()
+        //{
+        //    return this.GetEnumerator();
+        //}
     }
 }

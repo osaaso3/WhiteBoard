@@ -7,6 +7,7 @@ namespace Board.Client.Services.Interfaces
     {
         Task<ImageList> GetAppImage();
         Task<ImageList> GetUserImage(string userId);
+        Task<ImageList> GetUserTypeImages(string userId, string category);
         Task<string> PostNewImage(string userId, ImageData image);
     }
 }

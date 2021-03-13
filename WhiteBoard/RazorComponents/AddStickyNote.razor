@@ -3,11 +3,11 @@
     <ValidationSummary />
     <div class="form-grid">
         <label>
-            Name:
+            <span> Name</span><br />
             <InputText DisplayName="Name" @bind-Value="StickyNoteModel.Name"></InputText>
         </label>
         <label>
-            Color:
+            <span>Color</span><br />
             <InputSelect DisplayName="Color" TValue="NoteColor" @bind-Value="StickyNoteModel.BackgroundColor">
                 @foreach (var color in Enum.GetValues(typeof(NoteColor)))
                 {
@@ -16,7 +16,7 @@
             </InputSelect>
         </label>
         <label>
-            Size:
+            <span> Size</span><br />
             <InputSelect DisplayName="Size" TValue="NoteSize" @bind-Value="StickyNoteModel.Size">
                 @foreach (var size in Enum.GetValues(typeof(NoteSize)))
                 {
@@ -25,15 +25,15 @@
             </InputSelect>
         </label>
         <label>
-            Header:
+            <span>Note header</span><br />
             <InputText @bind-Value="StickyNoteModel.Header" DisplayName="Header"></InputText>
         </label>
         <label>
-            Font-size:
+            <span>Font-size</span><br />
             <InputNumber TValue="int" @bind-Value="StickyNoteModel.FontSize"></InputNumber>
         </label>
         <label class="long">
-            Text:<br />
+            <span>Sticky note text:</span><br />
             <InputTextArea @bind-Value="StickyNoteModel.Text" DisplayName="Text"></InputTextArea>
         </label>
 
@@ -44,17 +44,26 @@
 </EditForm>
 <hr />
 <br />
-<button @onclick="SubmitRender">Note Complete</button>
-<img height="@StickyNoteModel.Size.AsSpecs().H" width="@StickyNoteModel.Size.AsSpecs().W" src="@StickyNoteModel.ImageUrl" />
+<button @onclick="SubmitRender">Add Note to Whiteboard</button>
+
+<AuthorizeView>
+    <Authorized>
+        <button @onclick="(() => SaveToCloud(context.User.Identity.Name))">Save to cloud</button>
+    </Authorized>
+</AuthorizeView>
+<br />
+<div class="">
+    <img height="@StickyNoteModel.Size.AsSpecs().H" width="@StickyNoteModel.Size.AsSpecs().W" src="@StickyNoteModel.ImageUrl" />
+</div>
 <Canvas @ref="_canvas" hidden height="@StickyNoteModel.Size.AsSpecs().H" width="@StickyNoteModel.Size.AsSpecs().W"></Canvas>
 
 <div class="img-grid">
     @foreach (NoteColor note in Enum.GetValues(typeof(NoteColor)))
     {
-        <label @key="note">
-            @note.ToImageName()
+        <div class="note" @key="note">
+            <span class="inner-label"> @note.ToImageName()</span>
             <img id="@note.ToImageName()" src="icons/stickyNotes/@($"{note.ToImageName()}")-note.png" height="128" width="128" alt="Sticky note" />
-        </label>
+        </div>
     }
 </div>
 
