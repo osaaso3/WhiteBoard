@@ -1,3 +1,2 @@
-# WhiteBoard
-Whiteboard PWA with blazor
-[Demo](https://ambitious-plant-0ff4dc610.azurestaticapps.net)
+# WhiteBoardCModel
+dotnet publish -c Release -o release release/wwwroot
