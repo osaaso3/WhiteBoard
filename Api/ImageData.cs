@@ -13,6 +13,7 @@ namespace Board.Api
         public string UserName { get; set; }
         
         public string Category { get; set; } //ToDo change to Enum
+        public ImageCategory ImageCategory { get; set; }
         [JsonProperty("imageName")]
         public string ImageName { get; set; }
         [JsonProperty("description")]
@@ -33,5 +34,24 @@ namespace Board.Api
         [JsonProperty("images")]
         public List<ImageData> Images { get; set; }
     }
+    public enum ImageCategory
+    {
+        [Description("General image")]
+        General,
+        [Description("Whiteboard")]
+        Whiteboard,
+        [Description("Sticky Note")]
+        StickyNote,
 
+    }
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+    public class DescriptionAttribute : Attribute
+    {
+        public string Text { get; }
+
+        public DescriptionAttribute(string text)
+        {
+            Text = text;
+        }
+    }
 }

@@ -18,35 +18,33 @@ namespace Board.Client.RazorComponents
     public partial class ImageMenuModal
     {
         [Inject]
-        private ISyncLocalStorageService LocalStorage { get; set; }
-        [Inject]
         private AppState AppState { get; set; }
         [Inject]
         private IModalDialogService ModalService { get; set; }
         [Inject]
         private IStorageClient StorageClient { get; set; }
+        [Parameter]
+        public ImageList ImageList { get; set; } = new();
         public ImageData SelectedImage { get; set; }
-        private string selectedCategory;
-        private string imageDataUrl;
-        private ImageList imagesLoaded = new();
-        private string imageData;
+       
         
-        private void SelectCategory(ChangeEventArgs e)
-        {
-            selectedCategory = e.Value?.ToString() ?? "";
-        }
-        private async Task GetUserImages()
-        {
-            var user = AppState.UserName;
-            imagesLoaded = await StorageClient.GetUserImage(user);
-        }
-        private async Task GetUserTypeImages()
-        {
-            var user = AppState.UserName;
-            imagesLoaded = await StorageClient.GetUserTypeImages(user, selectedCategory);
-        }
+        //private void SelectCategory(ChangeEventArgs e)
+        //{
+        //    selectedCategory = e.Value?.ToString() ?? "";
+        //}
+        //private async Task GetUserImages()
+        //{
+        //    var user = AppState.UserName;
+        //    imagesLoaded = await StorageClient.GetUserImage(user);
+        //}
+        //private async Task GetUserTypeImages()
+        //{
+        //    var user = AppState.UserName;
+        //    imagesLoaded = await StorageClient.GetUserTypeImages(user, selectedCategory);
+        //}
         private void SelectImage(ImageData image)
         {
+            SelectedImage = image;
             var parameters = new ModalDialogParameters
             {
                 {"SelectedImage",SelectedImage }

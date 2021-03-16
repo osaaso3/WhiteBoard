@@ -55,7 +55,7 @@ namespace Board.Client.RazorComponents
         {
             var options = new ModalDialogOptions
             {
-                /*Style = "modal-base modal-large",*/
+                Style = "modal-base",
                 BackgroundClickToClose = false
             };
             ModalDialogResult modalResult = await ModalService.ShowDialogAsync<AddStickyNote>("Create a sticky note", options);

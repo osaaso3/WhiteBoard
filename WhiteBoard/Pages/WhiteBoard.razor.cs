@@ -153,6 +153,8 @@ namespace Board.Client.Pages
             _isEraseMode = isErase;
             _color = isErase ? "white" : "black";
             _lineWidth = isErase ? 20 : 3;
+            await InvokeAsync(StateHasChanged);
+            _shouldRender = false;
             await _context2D.StrokeStyleAsync(_color);
             await _context2D.LineWidthAsync(_lineWidth);
         }
@@ -168,7 +170,7 @@ namespace Board.Client.Pages
         {
 
             var modalConfirm = await ModalService.ShowMessageBoxAsync("Confirm Delete", "Are you sure you want clear the whiteboard?", MessageBoxButtons.YesNo, MessageBoxDefaultButton.Button2);
-            //var confirm = await Js.InvokeAsync<bool>("confirm", "Do you want to clear the whiteboard?");
+
             if (modalConfirm == MessageBoxDialogResult.No) return;
             await SaveCanvasStateToLocalStorage();
             await _context2D.ClearRectAsync(0, 0, _canvasSpecs.W, _canvasSpecs.H);
@@ -186,7 +188,6 @@ namespace Board.Client.Pages
             { Name = Name, ImageUrl = imageUrl, MarkerWidth = _lineWidth, Color = _color };
 
             LocalStorage.SetItem("LastCanvas", canvasData);
-
         }
         private void SaveToHistory(string imageUrl)
         {
@@ -340,6 +341,7 @@ namespace Board.Client.Pages
         {
             _currentNote = AppState.StickyNote;
             _selectedOption = "Sticky";
+            StateHasChanged();
         }
         private void HandleNewImage()
         {

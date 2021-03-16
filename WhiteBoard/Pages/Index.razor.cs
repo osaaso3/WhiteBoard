@@ -22,6 +22,7 @@ namespace Board.Client.Pages
         private bool start;
         private string name;
         private string imageDataUrl;
+        private CanvasModel canvasModel = new();
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -33,10 +34,16 @@ namespace Board.Client.Pages
                 AppState.IsAuth = user.Identity?.IsAuthenticated ?? false;
             }
         }
-        private void StartWhiteboard()
+        private void StartWhiteboard(bool isStart)
         {
+            name = canvasModel.Name;
+            imageDataUrl = canvasModel.ImageUrl;
             start = true;
             AppState.CanvasHistory = new CanvasHistory<string>(10);
+        }
+        private void HandleUpdateCanvas(CanvasModel canvas)
+        {
+
         }
 
         private void HandleNewWhiteboard(bool isNew)
@@ -44,28 +51,8 @@ namespace Board.Client.Pages
             start = !isNew;
             name = "";
             imageDataUrl = "";
+            canvasModel = new CanvasModel();
         }
-        private async Task OnInputFileChange(InputFileChangeEventArgs e)
-        {
-            string format = "image/png";
-            var imageFile = e.File;
-
-            name = imageFile.Name[0..^4];
-            var resizedImageFile = await imageFile.RequestImageFileAsync(format,
-                1200, 600);
-            byte[] buffer = new byte[resizedImageFile.Size];
-            await resizedImageFile.OpenReadStream().ReadAsync(buffer);
-            imageDataUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
-
-
-        }
-
-        private void RecoverLast()
-        {
-            var lastImage = LocalStorage.GetItem<CanvasModel>("LastCanvas");
-            AppState.CanvasHistory.Clear();
-            name = lastImage.Name;
-            imageDataUrl = lastImage.ImageUrl;
-        }
+      
     }
 }

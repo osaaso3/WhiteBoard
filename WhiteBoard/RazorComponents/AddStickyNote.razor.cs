@@ -71,12 +71,12 @@ namespace Board.Client.RazorComponents
             await InvokeAsync(StateHasChanged);
             await _context2D.DrawImageAsync(colorImg, 0, 0, 128, 128, 0, 0, spec.W, spec.H);
             var textLines = await SplitRenderLines(StickyNoteModel.Text, spec.W * .8);
-
+            var font = StickyNoteModel.FontSize;
             await _context2D.FontAsync($"bold {headerFont}px sarif");
-            await _context2D.FillTextAsync(StickyNoteModel.Header, 50, 25);
+            await _context2D.FillTextAsync(StickyNoteModel.Header, font * 3, font * 2);
 
             await _context2D.FontAsync($"italic small-caps {StickyNoteModel.FontSize}px/{headerFont}px Georgia sarif");
-            var start = headerFont + 50;
+            var start = headerFont + Math.Min(headerFont*2, 50);
             foreach (var text in textLines)
             {
                 await _context2D.StrokeTextAsync(text, 10, start);

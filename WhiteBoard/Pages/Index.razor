@@ -3,26 +3,16 @@
 @if (start)
 {
     <div class="whiteboard-container">
-        <WhiteBoard Name="@name" DataUrl="@imageDataUrl" IsStartNew="HandleNewWhiteboard" />
+        <WhiteBoard Name="@canvasModel.Name" DataUrl="@canvasModel.ImageUrl" IsStartNew="HandleNewWhiteboard" />
     </div>
 }
 else
 {
 <div class="home-grid">
-    <div>
-        <h6>Create new whiteboard</h6>
-        <input @bind-value="name" @bind-value:event="oninput" />
-        <button @onclick="StartWhiteboard">Start</button>
-        <hr />
-        <p>Or upload a previous whiteboard</p>
-        <InputFile OnChange="OnInputFileChange" />
-        @if (!string.IsNullOrWhiteSpace(imageDataUrl))
-        {
-            <img id="image" width="300" height="150" src="@imageDataUrl" alt="Your whiteboard image" />
-        }
-        <button @onclick="RecoverLast">Recover last</button>
+    <div class="form">
+         <StartForm @bind-CanvasModel="canvasModel" OnBegin="StartWhiteboard"></StartForm>
     </div>
-    <div>
+    <div class="auth-container">
         <AuthorizeView>
             <Authorized>
                 <div style="margin-right: 1rem">
