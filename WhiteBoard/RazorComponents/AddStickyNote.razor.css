@@ -1,10 +1,26 @@
-﻿.form-grid {
+﻿.modal-grid {
+    display: grid;
+    grid-template-columns:1fr 1fr;
+    grid-column-gap: .5em;
+    /*width:50rem;*/
+}
+.form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-column-gap: 6px;
-    width: 90%;
+    max-width: 25rem;
+    min-width: 23rem;
     margin-left: 5%;
     padding: 1rem 2rem;
+    border: 1px solid black;
+    box-shadow: -5px 5px 15px 5px grey;
+}
+.sticky-note-frame {
+    max-width: 25rem;
+    min-width: 23rem;
+}
+.note-container {
+    padding: 1.5rem;
     border: 1px solid black;
     box-shadow: -5px 5px 15px 5px grey;
 }
@@ -34,9 +50,26 @@ input[type=submit] {
     width: 120px;
     background-color: firebrick;
     color: white;
-    border:1px solid black;
-    margin-left:40%;
-    margin-top:1rem;
+    border: 1px solid black;
+    border-radius: 10px;
+    margin-left: 40%;
+    /*margin-top: 1rem;*/
+    box-shadow: -5px 5px 15px 5px grey;
+}
+/*.submit-wrapper{
+
+}*/
+.select-button {
+    height: 40px;
+    width:auto;
+    background-color: indigo;
+    color: white;
+    border: 1px solid black;
+    border-radius: 10px;
+    margin-left: auto;
+    margin-right:auto;
+    margin-bottom: 1.2rem;
+    padding:1px 8px;
     box-shadow: -5px 5px 15px 5px grey;
 }
 .long {
@@ -44,17 +77,25 @@ input[type=submit] {
     height:6rem;
     margin-bottom:2rem;
 }
+.submit-wrapper {
+    grid-column: auto/span 2;
+    margin-bottom:1rem;
+}
 .long span {
-    margin-left:10%;
-    font-size:110%;
+    margin-left: 10%;
+    font-size: 110%;
 }
 ::deep textarea {
     width:80%;
     height:100%;
     margin-left:10%;
 }
-.img-grid span {
+::deep input {
+    max-width:120px;
+}
+
+/*.img-grid span {
     margin-right:auto;
     margin-left:auto;
     bottom:0;
-}
+}*/

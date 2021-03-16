@@ -1,20 +1,12 @@
-﻿<select @onchange="SelectCategory">
-    <option value="">Category</option>
-    <option value="Whiteboard">Whiteboards</option>
-    <option value="StickyNote">Stickynote</option>
-    <option value="Image">Image</option>
-</select>
-<button class="submit" @onclick="GetUserTypeImages">Get Category Images</button>
-<button @onclick="GetUserImages">Get All Images From Cloud</button>
-<p>Response: <code>@imageData</code></p>
+﻿
 <div class="image-grid">
-    @if (imagesLoaded.Images != null)
+    @if (ImageList.Images != null)
     {
-        @foreach (var image in imagesLoaded.Images)
+        @foreach (var image in ImageList.Images)
         {
             <div style="border:1px solid black">
                 <img src="@image.ImageBytes.ToImageUrl()" width="200" height="200" />
-                <button class="select" @onclick="@(() => SelectImage(image))">Select Image</button>
+                <button class="select" @onclick="@(() => SelectImage(image))">Select</button>
             </div>
         }
     }

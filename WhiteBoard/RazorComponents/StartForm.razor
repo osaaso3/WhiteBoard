@@ -1,0 +1,58 @@
+﻿<div class="startForm">
+    <EditForm Model="Form" OnValidSubmit="SubmitForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <h3 class="text-center">Create or Edit Whiteboard</h3>
+        <label>
+            <span style="font-size:1.25rem">Whiteboard name:</span><br />
+            <InputText @bind-Value="Form.Name"></InputText>
+            @if (isNameMissing)
+            {
+                <br />
+                <span class="error">Name required for new whiteboards</span>
+            }
+
+        </label>
+        <p>
+            <InputRadioGroup TValue="StartOption" @bind-Value="Form.StartOption" DisplayName="Start Option">
+                <h5>Select start option:</h5>
+                <InputRadio Value="StartOption.None"></InputRadio>
+                <span>@(StartOption.None.GetEnumAttribute<DescriptionAttribute>().Text)</span>
+                <br />
+                <InputRadio Value="StartOption.New"></InputRadio>
+                <span>@(StartOption.New.GetEnumAttribute<DescriptionAttribute>().Text)</span>
+                <br />
+                <InputRadio Value="StartOption.Upload"></InputRadio>
+                <span>@(StartOption.Upload.GetEnumAttribute<DescriptionAttribute>().Text)</span>
+                <br />
+                <InputRadio Value="StartOption.Local"></InputRadio>
+                <span>@(StartOption.Local.GetEnumAttribute<DescriptionAttribute>().Text)</span>
+                <br />
+                <InputRadio Value="StartOption.Retreive"></InputRadio>
+                <span>@(StartOption.Retreive.GetEnumAttribute<DescriptionAttribute>().Text)</span>
+                <br />
+                <AuthorizeView>
+                    <Authorized Context="auth">
+                        <InputRadio Value="StartOption.Cloud"></InputRadio>
+                        <span>@(StartOption.Cloud.GetEnumAttribute<DescriptionAttribute>().Text)</span>
+                    </Authorized>
+                </AuthorizeView>
+
+            </InputRadioGroup>
+        </p>
+        <button type="submit">@buttonLabel</button>
+    </EditForm>
+</div>
+<hr />
+@if (isUpload)
+{
+    <p>Upload image:</p>
+    <InputFile OnChange="OnInputFileChange" />
+}
+@if (!string.IsNullOrWhiteSpace(DataUrl))
+{
+    <img id="image" width="300" height="150" src="@DataUrl" alt="Your whiteboard image" />
+    <br />
+    <button @onclick="Start">Start</button>
+}

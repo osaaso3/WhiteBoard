@@ -1,4 +1,11 @@
 ﻿.home-grid {
     display:grid;
-    grid-template-columns: 2fr 1fr
+    grid-template-columns: 3fr 2fr
+}
+.form{
+    margin-right:auto;
+    margin-left:auto;
+}
+.auth-container{
+    padding:2rem 1rem
 }

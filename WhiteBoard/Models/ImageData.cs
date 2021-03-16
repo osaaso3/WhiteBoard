@@ -7,12 +7,30 @@ namespace Board.Client.Models
 {
     public class ImageData
     {
+        private ImageCategory imageCategory;
+
         [JsonPropertyName("id")]
         public string Id { get; set; }
         [JsonPropertyName("userName")]
         public string UserName { get; set; }
         [JsonPropertyName("category")]
         public string Category { get; set; } //ToDo change to Enum
+        [JsonPropertyName("imageCategory")]
+        public ImageCategory ImageCategory
+        {
+            get
+            {
+                if (imageCategory != ImageCategory.None) return imageCategory;
+                return Category switch
+                {
+                    "General" => ImageCategory.General,
+                    "StickyNote" => ImageCategory.StickyNote,
+                    "Whiteboard" => ImageCategory.Whiteboard,
+                    _ => ImageCategory.None
+                };
+            }
+            set { imageCategory = value; }
+        }
         [JsonPropertyName("imageName")]
         public string ImageName { get; set; }
         [JsonPropertyName("imageBytes")]
@@ -29,11 +47,16 @@ namespace Board.Client.Models
         [JsonPropertyName("images")]
         public List<ImageData> Images { get; set; }
     }
-    public static class ImageExtensions
+    public enum ImageCategory
     {
-        public static string ToImageUrl(this byte[] buffer, string format = "image/png")
-        {
-            return $"data:{format};base64,{Convert.ToBase64String(buffer)}";
-        }
+        None,
+        [Description("General")]
+        General,
+        [Description("Whiteboard")]
+        Whiteboard,
+        [Description("StickyNote")]
+        StickyNote,
+
     }
+    
 }

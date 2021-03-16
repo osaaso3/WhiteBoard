@@ -1,0 +1,17 @@
+﻿.startForm {
+    margin-left:2rem;
+    margin-top:2rem;
+    padding:1rem;
+}
+.startForm span {
+    margin-left:.25rem;
+}
+::deep input[type=radio]{
+    margin-left:.5rem
+}
+.error {
+    font-size:.8rem;
+    color:red;
+    font-style:italic;
+    margin-top:-2px;
+}
