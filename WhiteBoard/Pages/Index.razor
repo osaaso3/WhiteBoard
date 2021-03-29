@@ -1,4 +1,65 @@
 ﻿@page "/"
+@X1 @Y1 @X2 @Y2
+<button @onclick="NewGraph1">R</button>
+
+@code {
+    public double X1 { get; set; } = 300;
+    public double Y1 { get; set; } = 300;
+    public double X2 { get; set; } = 500;
+    public double Y2 { get; set; } = 300;
+
+     public void NewGraph1()
+    {
+        //links1[0].LinkType= LinkType.Curved;
+                //links1[1].LinkType= LinkType.Angled;
+
+X1=p.X;
+X2=q.X;
+Y1=p.Y;
+        Y2 = q.Y;
+        run_auto_layout = true;
+
+        StateHasChanged();
+        }
+
+}
+
+
+
+<div style="height: 1000px; width: 1000px;">
+<Diagram @ontouchstart="NewGraph1">
+    <Nodes>
+        <RectangleNode X="200" Y="200" Movable="false">
+            Hello fixed node
+        </RectangleNode>
+        <RectangleNode @bind-X="p.X" @bind-Y="p.Y" >
+            Hello movable node
+        </RectangleNode>
+        <Node Id="abc" @bind-X="q.X" @bind-Y="q.Y">
+            Hello node @context.Id
+        </Node>
+        <Node Id="hij" @bind-X="r.X" @bind-Y="r.Y">
+            Hello node @context.Id
+        </Node>
+        <Node Id="def" X="X1" Y="X2">
+            Hello node @context.Id
+        </Node>
+    </Nodes>
+
+    <Links/>
+</Diagram>
+</div>
+
+
+@code {
+    public Excubo.Blazor.Diagrams.Point p = new Excubo.Blazor.Diagrams.Point(400, 200);
+    public Excubo.Blazor.Diagrams.Point q = new Excubo.Blazor.Diagrams.Point(300, 100);
+    public Excubo.Blazor.Diagrams.Point r = new Excubo.Blazor.Diagrams.Point(500, 300);
+
+}
+
+
+
 <div style="height: 1000px; width: 1000px;">
 
 <Diagram>
@@ -22,7 +83,11 @@
     <Links>
         @foreach (var link in links1)
         {
-            <StraightLink @key="@((link.Source, link.Target))" Source="@link.Source" Target="@link.Target" />
+                            link.Arrow=Arrow.Both;
+
+                link.LinkType= LinkType.Angled;
+            <CurvedLink @key="@((link.Source, link.Target))" Source="@link.Source" Target="@link.Target" />
+        
         }
     </Links>
     <AutoLayoutSettings @ref="auto_layout" Algorithm="Algorithm.TreeVertical" />
@@ -39,20 +104,31 @@
 <button @onclick="NewLink">Add random link</button>
 <button @onclick="RemoveFirstLink">Remove first link</button>
 
+@asoInt
+
 @code {
+    public string asoInt="0";
+
     private void NewGraph()
     {
         var rnd = new Random((int)DateTime.Now.Ticks);
         nodes1.Clear();
         nodes1.AddRange(Enumerable.Range(0, rnd.Next(10, 20)).Select(i => new MyNode { Id = "N" + rnd.Next(100 * i, 100 * (i + 1)).ToString(), Type = NodeType.Rectangle }));
         links1.Clear();
+
         links1.AddRange(Enumerable.Range(0, rnd.Next(10, 20))
         .Select(_ =>
         {
             var selection = nodes1.OrderBy(_ => rnd.NextDouble()).Take(2).OrderBy(v => v.Id).ToList();
             return new LinkData { Source = selection[0].Id, Target = selection[1].Id };
+        
         }));
+       // nodes1[0].Type=NodeType.Ellipse;
+         //       links1[0].Arrow=Arrow.Target;
+           //     links1[1].Arrow=Arrow.Both;
+       // asoInt=links1[0].LinkType.ToString();
         run_auto_layout = true;
+        
         StateHasChanged();
     }
     private void NewRectangle()
@@ -265,38 +341,6 @@
         new MyLinkDefinition { Source = new NodeAnchor { NodeId = prefix + "c", Port = Position.SouthWest }, Target = new NodeAnchor { NodeId = prefix + "sw", Port = Position.NorthEast } },
     }).ToList();
     private Diagram Diagram { get; set; }
-}
-
-@code {
-    private double X1 { get; set; } = 300;
-    private double Y1 { get; set; } = 300;
-    private double X2 { get; set; } = 500;
-    private double Y2 { get; set; } = 300;
-}
-
-<div style="height: 1000px; width: 1000px;">
-<Diagram>
-    <Nodes>
-        <RectangleNode X="200" Y="200" Movable="false">
-            Hello fixed node
-        </RectangleNode>
-        <RectangleNode @bind-X="p.X" @bind-Y="p.Y">
-            Hello movable node
-        </RectangleNode>
-                    <Node Id="abc" X="500" Y="500">
-            Hello node @context.Id
-        </Node>
-        <Node Id="def" X="X1" Y="X2">
-            Hello node @context.Id
-        </Node>
-    </Nodes>
-
-    <Links />
-</Diagram>
-</div>
-
-@code {
-    private Excubo.Blazor.Diagrams.Point p = new Excubo.Blazor.Diagrams.Point(400, 200);
 }
 
 
